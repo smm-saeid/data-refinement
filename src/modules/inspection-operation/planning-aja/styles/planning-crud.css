@@ -1,0 +1,76 @@
+.styledTable {
+    .MuiStepLabel-labelContainer span {
+        font-size: 17px;
+        height: 30px;
+    }
+
+    .MuiStepConnector-root {
+        height: 10px;
+    }
+
+    .MuiTableCell-body {
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+    th, td, table {
+        border: 1px solid rgba(224, 224, 224, 1);
+    }
+
+    table {
+        border-collapse: collapse;
+        border-radius: 6px;
+    }
+
+    table thead {
+        background-color: #023e8a;
+        color: white;
+    }
+
+    .MuiTableCell-head{ text-align: center; color: white;}
+
+    table thead th {
+        padding-block: 10px;
+    }
+
+    /*
+    mui
+    */
+
+    td {
+        padding: 0px !important;
+    }
+
+}
+
+
+.nirooData {
+    padding: 0 !important;
+    text-align: center;
+    align-items: center;
+}
+
+.evaluationEditor {
+    .ck-content {
+        td {
+            text-align: center;
+        }
+    }
+
+    @media print {
+        table {
+            border: 1px solid rgb(200, 200, 200);
+
+        }
+
+        td {
+            border: 1px solid rgb(224, 224, 224);
+            text-align: center;
+        }
+        td.text-right{
+            text-align: right;
+        }
+    }
+
+}
+

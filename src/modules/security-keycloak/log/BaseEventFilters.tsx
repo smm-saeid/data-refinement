@@ -1,0 +1,153 @@
+import {
+  Box,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Paper,
+  Typography,
+} from '@mui/material';
+import { Search as SearchIcon, Clear as ClearIcon } from '@mui/icons-material';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import { AdapterMomentJalaali } from '@mui-x-date-pickers/AdapterMomentJalaali';
+import moment from 'moment-jalaali';
+
+export interface BaseEventFilters {
+  ipAddress: string;
+  username: string;
+  activityType: string;
+  startDate: any;
+  endDate: any;
+}
+
+interface BaseEventFiltersProps {
+  filters: BaseEventFilters;
+  onFiltersChange: (filters: BaseEventFilters) => void;
+  onSearch: () => void;
+  onReset: () => void;
+  loading?: boolean;
+  title: string;
+  activityTypeOptions: Array<{ value: string; label: string }>;
+}
+
+export function BaseEventFilters({
+  filters,
+  onFiltersChange,
+  onSearch,
+  onReset,
+  loading = false,
+  title,
+  activityTypeOptions,
+}: BaseEventFiltersProps) {
+  const handleInputChange = (field: keyof BaseEventFilters, value: any) => {
+    onFiltersChange({
+      ...filters,
+      [field]: value,
+    });
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      onSearch();
+    }
+  };
+
+  return (
+    <Paper sx={{ p: 3, mb: 3 }}>
+      <Typography
+        variant="h5"
+        textAlign="center"
+        gutterBottom
+        sx={{ fontWeight: 'bold' }}
+      >
+        {title}
+      </Typography>
+
+      {/* <LocalizationProvider dateAdapter={AdapterMomentJalaali}> */}
+      <Box display="flex" gap={2} flexWrap="wrap" alignItems="flex-start">
+        <TextField
+          label="آدرس IP"
+          value={filters.ipAddress}
+          onChange={e => handleInputChange('ipAddress', e.target.value)}
+          onKeyPress={handleKeyPress}
+          size="small"
+          sx={{ minWidth: 180 }}
+        />
+
+        <TextField
+          label="نام کاربری"
+          value={filters.username}
+          onChange={e => handleInputChange('username', e.target.value)}
+          onKeyPress={handleKeyPress}
+          size="small"
+          sx={{ minWidth: 180 }}
+        />
+
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <InputLabel>نوع فعالیت</InputLabel>
+          <Select
+            value={filters.activityType}
+            onChange={e => handleInputChange('activityType', e.target.value)}
+            label="نوع فعالیت"
+          >
+            {activityTypeOptions.map(option => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* <DatePicker
+            label="بازه شروع"
+            value={filters.startDate ? moment(filters.startDate) : null}
+            onChange={date => handleInputChange('startDate', date)}
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: { minWidth: 180 },
+                onKeyPress: handleKeyPress,
+              },
+            }}
+          /> */}
+
+        {/* <DatePicker
+            label="بازه پایان"
+            value={filters.endDate ? moment(filters.endDate) : null}
+            onChange={date => handleInputChange('endDate', date)}
+            slotProps={{
+              textField: {
+                size: 'small',
+                sx: { minWidth: 180 },
+                onKeyPress: handleKeyPress,
+              },
+            }} */}
+        {/* /> */}
+
+        <Box display="flex" gap={1}>
+          <Button
+            variant="contained"
+            startIcon={<SearchIcon />}
+            onClick={onSearch}
+            disabled={loading}
+          >
+            جستجو
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<ClearIcon />}
+            onClick={onReset}
+            disabled={loading}
+          >
+            پاک کردن
+          </Button>
+        </Box>
+      </Box>
+      {/* </LocalizationProvider> */}
+    </Paper>
+  );
+}

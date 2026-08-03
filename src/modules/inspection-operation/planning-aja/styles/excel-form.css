@@ -1,0 +1,33 @@
+.editable {
+
+
+    background-image: linear-gradient(45deg, transparent 50%, gray 50%),
+    linear-gradient(135deg, gray 50%, transparent 50%);
+
+    padding: 0px !important;
+
+    align-items: center;
+
+
+    background-position: calc(15px) calc(1.5em + 5px),
+    calc(20px) calc(1.5em + 5px),
+    calc(100% - 2.5em);
+
+
+    background-size: 5px 5px, 5px 5px, 1px 1.5em;
+
+    background-repeat: no-repeat;
+
+}
+
+.apiEditable {
+
+    padding: 0px !important;
+
+}
+
+.MuiSelect-icon {
+
+    display: none;
+
+}

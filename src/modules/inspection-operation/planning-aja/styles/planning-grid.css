@@ -1,0 +1,80 @@
+.MuiDataGrid-row {
+
+    border-bottom: 1px solid lightgrey;
+
+}
+
+
+
+.professional-planning {
+
+
+    .MuiDataGrid-columnHeader.myh {
+
+
+        -ms-writing-mode: tb-rl;
+
+        -webkit-writing-mode: vertical-rl;
+
+        writing-mode: vertical-rl;
+
+        transform: rotate(180deg);
+
+        white-space: nowrap;
+
+
+        .MuiDataGrid-columnHeaderTitleContainerContent {
+
+            margin-bottom: auto;
+
+        }
+
+
+        .MuiDataGrid-columnHeaderTitle {
+
+            text-align: left;
+
+        }
+
+    }
+
+
+}
+
+
+.role-based-report {
+
+
+    .MuiDataGrid-columnHeaderDraggableContainer {
+
+        flex-direction: column;
+
+        align-items: center;
+
+    }
+
+
+    .MuiDataGrid-columnHeader.myh {
+
+
+
+        text-align: center;
+
+
+        .MuiDataGrid-columnHeaderTitleContainerContent {
+
+            margin-bottom: auto;
+
+        }
+
+
+        .MuiDataGrid-columnHeaderTitle {
+
+            text-align: center;
+
+        }
+
+    }
+
+
+}
