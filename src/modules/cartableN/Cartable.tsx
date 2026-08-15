@@ -20,7 +20,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TuneIcon from '@mui/icons-material/Tune';
-
+// import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import type { GridColDef } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
+import { faIR } from '@mui/x-data-grid/locales';
 const styles = {
   width: '150px',
   height: '50px',
@@ -28,6 +31,96 @@ const styles = {
 };
 
 export default function Cartable() {
+  const columns: GridColDef<(typeof rows)[number]>[] = [
+    { field: 'process', headerName: 'عملیات', width: 100 },
+    {
+      field: 'view',
+      headerName: 'وضعیت مشاهده',
+      width: 120,
+      editable: true,
+    },
+    {
+      field: 'month',
+      headerName: 'ماه',
+      width: 100,
+    },
+    {
+      field: 'year',
+      headerName: 'سال',
+      // type: 'number',
+      width: 110,
+      editable: true,
+    },
+    {
+      field: 'details',
+      headerName: 'مشخصات فایل',
+      description: 'This column has a value getter and is not sortable.',
+      sortable: false,
+      width: 160,
+      valueGetter: (value, row) =>
+        `${row.firstName || ''} ${row.lastName || ''}`,
+    },
+    {
+      field: 'description',
+      headerName: 'توضیحات',
+      width: 200,
+      editable: true,
+    },
+    {
+      field: 'num',
+      headerName: 'شماره دستور',
+      width: 100,
+      editable: true,
+    },
+    {
+      field: 'yegan',
+      headerName: 'یگان ایجاد کننده',
+      width: 140,
+      editable: true,
+    },
+    {
+      field: 'force',
+      headerName: 'نیرو',
+      width: 120,
+      editable: true,
+    },
+    {
+      field: 'community',
+      headerName: 'سازمان ارسال کننده',
+      width: 140,
+      editable: true,
+    },
+    {
+      field: 'curYegan',
+      headerName: 'یگان فعلی',
+      width: 120,
+      editable: true,
+    },
+    {
+      field: 'processSit',
+      headerName: 'وضعیت فرآیند',
+      width: 120,
+      editable: true,
+    },
+    {
+      field: 'fileNum',
+      headerName: 'شماره فایل',
+      width: 120,
+      editable: true,
+    },
+  ];
+
+  const rows = [
+    { id: 1, lastName: 'Snow', firstName: 'Jon', age: 14 },
+    { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 31 },
+    { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 31 },
+    { id: 4, lastName: 'Stark', firstName: 'Arya', age: 11 },
+    { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
+    { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
+    { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
+    { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
+    { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
+  ];
   const month = [
     'فروردین',
     'اردیبهشت',
@@ -90,10 +183,18 @@ export default function Cartable() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             marginY: '50px',
             rowGap: '20px',
+            columnGap: '10%',
             // justifyContent: 'space-between',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>ماه:</Typography>
             <Autocomplete
               disablePortal
@@ -104,11 +205,25 @@ export default function Cartable() {
               )}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>سال:</Typography>
             <TextField />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>وضعیت کارتابل:</Typography>
             <RadioGroup name="use-radio-group" defaultValue="first">
               <FormControlLabel
@@ -123,7 +238,15 @@ export default function Cartable() {
               />
             </RadioGroup>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+
+              columnGap: '8px',
+            }}
+          >
             <Typography>وضعیت فرآیند:</Typography>
             <Autocomplete
               disablePortal
@@ -134,14 +257,28 @@ export default function Cartable() {
               )}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography sx={{ marginLeft: '10px' }}>شماره یگان:</Typography>
             از:
             <TextField sx={{ width: '70px' }} />
             تا:
             <TextField sx={{ width: '70px' }} />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>نیرو:</Typography>
             <Autocomplete
               disablePortal
@@ -152,15 +289,36 @@ export default function Cartable() {
               )}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>شماره کارمندی:</Typography>
             <TextField />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>شماره دستور:</Typography>
             <TextField sx={{ width: '150px' }} />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>سازمان ارسال کننده:</Typography>
             <Autocomplete
               disablePortal
@@ -169,7 +327,14 @@ export default function Cartable() {
               renderInput={params => <TextField {...params} label="" />}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>از تاریخ:</Typography>
             <DatePicker
               calendar={persian}
@@ -177,7 +342,14 @@ export default function Cartable() {
               render={<InputIcon style={styles} />}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', columnGap: '8px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              columnGap: '8px',
+            }}
+          >
             <Typography>تا تاریخ:</Typography>
             <DatePicker
               calendar={persian}
@@ -228,15 +400,18 @@ export default function Cartable() {
           تهیه خروجی داده ها
         </Button>
       </Box>
-      <Box>
+      <Box
+        sx={{
+          marginTop: '15px',
+          border: 'solid 1px',
+          padding: '8px',
+          marginBottom: '40px',
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
             columnGap: '5px',
-            marginTop: '15px',
-            border: 'solid 1px',
-            padding: '8px',
-            marginBottom: '40px',
           }}
         >
           <Button variant="contained" size="medium">
@@ -259,6 +434,23 @@ export default function Cartable() {
             <TuneIcon />
             سفارشی سازی ستون ها
           </Button>
+        </Box>
+        <Box sx={{ height: 400, width: '100%', marginTop: '20px' }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            localeText={faIR.components.MuiDataGrid.defaultProps.localeText}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
+              },
+            }}
+            pageSizeOptions={[5]}
+            checkboxSelection
+            disableRowSelectionOnClick
+          />
         </Box>
       </Box>
     </Box>

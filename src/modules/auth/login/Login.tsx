@@ -8,7 +8,8 @@ import Captcha from '@/modules/auth/login/Captcha.tsx';
 import FormBuilder from '@/components/form/FormBuilder.tsx';
 import { useAuth } from 'hooks/useAuth.ts';
 
-const LOGIN_URL = `${import.meta.env.VITE_KEYCLOAK_SERVICE}/login`;
+// const LOGIN_URL = `${import.meta.env.VITE_KEYCLOAK_SERVICE}/login`;
+const LOGIN_URL = `http://190.172.2.124:7080/login`;
 
 interface LoginResponse {
   message: string;
