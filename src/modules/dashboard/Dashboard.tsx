@@ -2,7 +2,7 @@ import { Box, Stack, Typography } from '@mui/material';
 import DashboardInfo from './dashboardInfo';
 import jalali from '@/lib/jalali';
 
-function Amar() {
+function Dashboard() {
   const count = 5;
   const date = new Date();
   const time = jalali.format(date);
@@ -75,4 +75,4 @@ function Amar() {
   );
 }
 
-export default Amar;
+export default Dashboard;

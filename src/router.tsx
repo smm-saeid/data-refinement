@@ -19,10 +19,11 @@ import UnitPortalRoutes from 'modules/unit-portal/routes.tsx';
 import GuideRoutes from 'modules/guide/routes.tsx';
 import OracleAppexDashboardRoutes from './modules/reports/routes';
 import NotFoundPage from './components/NotFoundPage';
-import AmarRoutes from './modules/amar/routs';
+import AmarRoutes from './modules/dashboard/routs';
 import DashboardLayout from './components/layout/DashboardLayout';
-import Amar from './modules/amar/Amar';
+import Amar from './modules/dashboard/Dashboard';
 import CartableRoutes from './modules/cartableN/routes';
+import DashboardRoutes from './modules/dashboard/routs';
 
 export const router = createBrowserRouter([
   {
@@ -57,7 +58,7 @@ export const router = createBrowserRouter([
       // ...UnitPortalRoutes,
       // ...GuideRoutes,
       // ...OracleAppexDashboardRoutes,
-      ...AmarRoutes,
+      ...DashboardRoutes,
       ...CartableRoutes,
     ],
   },
