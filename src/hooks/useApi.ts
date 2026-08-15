@@ -8,6 +8,7 @@ import {
 } from '@tanstack/react-query';
 import { AxiosError, type AxiosRequestConfig } from 'axios';
 import { axiosClient, type NormalizedApiResponse } from '@/lib/axios-client';
+import type { PaginationQueryParam } from '@/types/api';
 
 // Generic API Error type that preserves full Axios error
 export type ApiError<T = any> = AxiosError<T>;
@@ -43,7 +44,7 @@ export function useApiQuery<
   TParams = unknown,
   TError = any,
   TSelectedData = NormalizedApiResponse<TData> // ✅ Default to full response
->(options: UseApiQueryOptions<TData, TParams, TError, TSelectedData>) {
+>(p0: (string | PaginationQueryParam)[], p1: () => any, p2: { keepPreviousData: boolean; }, options: UseApiQueryOptions<TData, TParams, TError, TSelectedData>) {
   const { url, params, config, queryKey, ...queryOptions } = options;
 
   const finalQueryKey = queryKey || [url, params];

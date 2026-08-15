@@ -23,6 +23,8 @@ import AmarRoutes from './modules/amar/routs';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Amar from './modules/amar/Amar';
 import CartableRoutes from './modules/cartableN/routes';
+import UserManagementRoutes from './modules/userManagement/routes';
+import MessageRoutes from './modules/message/routes';
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +61,8 @@ export const router = createBrowserRouter([
       // ...OracleAppexDashboardRoutes,
       ...AmarRoutes,
       ...CartableRoutes,
+      ...UserManagementRoutes,
+      ...MessageRoutes
     ],
   },
   {
