@@ -2,6 +2,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  Checkbox,
   FormControlLabel,
   Radio,
   RadioGroup,
@@ -15,7 +16,6 @@ import persian_fa from 'react-date-object/locales/persian_fa';
 import InputIcon from 'react-multi-date-picker/components/input_icon';
 import { GridSearchIcon } from '@mui/x-data-grid';
 import CachedIcon from '@mui/icons-material/Cached';
-import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -24,20 +24,74 @@ import TuneIcon from '@mui/icons-material/Tune';
 import type { GridColDef } from '@mui/x-data-grid';
 import { DataGrid } from '@mui/x-data-grid';
 import { faIR } from '@mui/x-data-grid/locales';
+import React, { useState } from 'react';
+import NewCart from './newCart';
+import Month from './monthInput';
+import NoInput from './noInput';
+import type { GridRowSelectionModel } from '@mui/x-data-grid';
 const styles = {
   width: '150px',
   height: '50px',
   fontSize: '16px',
 };
 
+const gridData = [
+  {
+    id: 1,
+    watched: true,
+    month: 6,
+    year: 14,
+    fileDet: 'نامعلوم',
+    description: 'توضیح',
+    orderNum: 10052,
+    yegan: '56325',
+    force: 'هوایی',
+    sender: 'زمینی',
+    curYegan: 1527,
+    processStatus: 'تایید',
+    fileNum: '352',
+  },
+  {
+    id: 2,
+    watched: false,
+    month: 6,
+    year: 14,
+    fileDet: 'نامعلوم',
+    description: 'توضیح',
+    orderNum: 10052,
+    yegan: '56325',
+    force: 'هوایی',
+    sender: 'زمینی',
+    curYegan: 1527,
+    processStatus: 'تایید',
+    fileNum: '352',
+  },
+  {
+    id: 3,
+    watched: true,
+    month: 6,
+    year: 14,
+    fileDet: 'نامعلوم',
+    description: 'توضیح',
+    orderNum: 10052,
+    yegan: '56325',
+    force: 'هوایی',
+    sender: 'زمینی',
+    curYegan: 1527,
+    processStatus: 'تایید',
+    fileNum: '352',
+  },
+];
+
 export default function Cartable() {
   const columns: GridColDef<(typeof rows)[number]>[] = [
     { field: 'process', headerName: 'عملیات', width: 100 },
     {
-      field: 'view',
+      field: 'watched',
       headerName: 'وضعیت مشاهده',
       width: 120,
       editable: true,
+      renderCell: params => <Checkbox checked={params.value} />,
     },
     {
       field: 'month',
@@ -52,13 +106,11 @@ export default function Cartable() {
       editable: true,
     },
     {
-      field: 'details',
+      field: 'fileDet',
       headerName: 'مشخصات فایل',
       description: 'This column has a value getter and is not sortable.',
       sortable: false,
       width: 160,
-      valueGetter: (value, row) =>
-        `${row.firstName || ''} ${row.lastName || ''}`,
     },
     {
       field: 'description',
@@ -67,7 +119,7 @@ export default function Cartable() {
       editable: true,
     },
     {
-      field: 'num',
+      field: 'orderNum',
       headerName: 'شماره دستور',
       width: 100,
       editable: true,
@@ -85,7 +137,7 @@ export default function Cartable() {
       editable: true,
     },
     {
-      field: 'community',
+      field: 'sender',
       headerName: 'سازمان ارسال کننده',
       width: 140,
       editable: true,
@@ -97,7 +149,7 @@ export default function Cartable() {
       editable: true,
     },
     {
-      field: 'processSit',
+      field: 'processStatus',
       headerName: 'وضعیت فرآیند',
       width: 120,
       editable: true,
@@ -110,31 +162,23 @@ export default function Cartable() {
     },
   ];
 
-  const rows = [
-    { id: 1, lastName: 'Snow', firstName: 'Jon', age: 14 },
-    { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 31 },
-    { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 31 },
-    { id: 4, lastName: 'Stark', firstName: 'Arya', age: 11 },
-    { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-    { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-    { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-    { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-    { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
-  ];
-  const month = [
-    'فروردین',
-    'اردیبهشت',
-    'خرداد',
-    'تیر',
-    'مرداد',
-    'شهریور',
-    'مهر',
-    'آبان',
-    'آذر',
-    'دی',
-    'بهمن',
-    'اسفند',
-  ];
+  const [rows, setRows] = useState(gridData);
+
+  const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set(),
+  });
+
+  const handleDelete = () => {
+    setRows(rows => rows.filter(row => !selectedRows.ids.has(row.id)));
+    console.log(rows.filter(row => selectedRows.ids.has(row.id)));
+
+    setSelectedRows({
+      type: 'include',
+      ids: new Set(),
+    });
+  };
+
   const process = ['ارسال', 'دریافت'];
   const forces = [
     'نیرو زمینی',
@@ -187,35 +231,8 @@ export default function Cartable() {
             // justifyContent: 'space-between',
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              columnGap: '8px',
-            }}
-          >
-            <Typography>ماه:</Typography>
-            <Autocomplete
-              disablePortal
-              options={month}
-              sx={{ width: 150 }}
-              renderInput={params => (
-                <TextField {...params} label="انتخاب کنید" />
-              )}
-            />
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              columnGap: '8px',
-            }}
-          >
-            <Typography>سال:</Typography>
-            <TextField />
-          </Box>
+          <Month />
+          <NoInput title="سال" />
           <Box
             sx={{
               display: 'flex',
@@ -289,28 +306,8 @@ export default function Cartable() {
               )}
             />
           </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              columnGap: '8px',
-            }}
-          >
-            <Typography>شماره کارمندی:</Typography>
-            <TextField />
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              columnGap: '8px',
-            }}
-          >
-            <Typography>شماره دستور:</Typography>
-            <TextField sx={{ width: '150px' }} />
-          </Box>
+          <NoInput title="شماره کارمندی" />
+          <NoInput title="شماره دستور" />
           <Box
             sx={{
               display: 'flex',
@@ -396,9 +393,6 @@ export default function Cartable() {
         <Button variant="contained" size="medium">
           به اتمام رسیده
         </Button>
-        <Button variant="contained" size="medium">
-          تهیه خروجی داده ها
-        </Button>
       </Box>
       <Box
         sx={{
@@ -414,11 +408,8 @@ export default function Cartable() {
             columnGap: '5px',
           }}
         >
-          <Button variant="contained" size="medium">
-            <AddIcon />
-            جدید
-          </Button>
-          <Button variant="contained" size="medium">
+          <NewCart />
+          <Button onClick={handleDelete} variant="contained" size="medium">
             <DeleteIcon />
             حذف موارد انتخابی
           </Button>
@@ -429,6 +420,9 @@ export default function Cartable() {
           <Button variant="contained" size="medium">
             <PictureAsPdfIcon />
             خروجی پی دی اف
+          </Button>
+          <Button variant="contained" size="medium">
+            تهیه خروجی داده ها
           </Button>
           <Button variant="contained" size="medium">
             <TuneIcon />
@@ -447,9 +441,13 @@ export default function Cartable() {
                 },
               },
             }}
+            rowSelectionModel={selectedRows}
+            onRowSelectionModelChange={newSelection => {
+              setSelectedRows(newSelection);
+            }}
             pageSizeOptions={[5]}
             checkboxSelection
-            disableRowSelectionOnClick
+            // disableRowSelectionOnClick
           />
         </Box>
       </Box>
