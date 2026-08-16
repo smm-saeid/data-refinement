@@ -1,36 +1,75 @@
+// ==================================================
+// Company
+// ==================================================
+
+export type UserCompany = {
+  name?: string;
+  department?: string;
+  title?: string;
+
+  address?: {
+    address?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+};
+
+// ==================================================
+// User
+// ==================================================
+
 export type User = {
   id: number;
+
   firstName: string;
   lastName: string;
-  maidenName?: string;
-  age: number;
-  gender: string;
-  phone: string;
   username: string;
-  image: string;
 
-  company?: {
-    department?: string;
-    title?: string;
-  };
+  // اطلاعات کاربر
+  password?: string;
+  personnelCode?: string;
 
-  // برای DataGrid
+  age?: number;
+  gender?: string;
+  phone?: string;
+  email?: string;
+
+  birthDate?: string;
+  image?: string;
+
+  company?: UserCompany;
+
+  // Frontend
   fullName?: string;
   department?: string;
+  isLocked?: boolean;
 };
+
+// ==================================================
+// User Form
+// ==================================================
+
+export type UserForm = {
+  firstName: string;
+  lastName: string;
+
+  username: string;
+
+  password: string;
+  confirmPassword: string;
+
+  personnelCode: string;
+};
+
+// ==================================================
+// Users API Response
+// ==================================================
 
 export type UsersResponse = {
   users: User[];
   total: number;
   skip: number;
   limit: number;
-};
-
-export type UserForm = {
-  firstName: string;
-  lastName: string;
-  age: string;
-  gender: string;
-  phone: string;
-  username: string;
 };

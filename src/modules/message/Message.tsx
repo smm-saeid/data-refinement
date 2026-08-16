@@ -226,18 +226,30 @@ const Message = () => {
 
       {/* Send Message Modal */}
       <Dialog
-        open={showModal}
-        onClose={handleCloseModal}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
+  open={showModal}
+  onClose={handleCloseModal}
+  fullWidth
+  maxWidth="lg"
+ slotProps={{
+    paper: {
+      sx: {
+        width: '90%',
+        maxWidth: '1100px',
+        minHeight: '650px',
+        borderRadius: 2,
+      },
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      fontSize: '20px',
+      fontWeight: 'bold',
+    }}
+  >
           ارسال پیام
 
           <IconButton onClick={handleCloseModal}>

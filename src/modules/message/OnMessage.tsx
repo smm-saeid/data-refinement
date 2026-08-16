@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from 'react';
-
 import {
   Box,
   Button,
@@ -12,6 +10,7 @@ import {
   DialogActions,
   Typography,
   IconButton,
+  Alert,
 } from '@mui/material';
 
 import SendIcon from '@mui/icons-material/Send';
@@ -19,6 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
+
 interface OnMessageProps {
   onClose: () => void;
 }
@@ -33,6 +33,16 @@ interface User {
 interface UsersResponse {
   users: User[];
 }
+
+// =========================
+// محدودیت فایل
+// =========================
+
+// حداکثر حجم فایل: 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+// فقط ZIP
+const ALLOWED_FILE_TYPE = 'application/zip';
 
 const OnMessage = ({ onClose }: OnMessageProps) => {
   // =========================
@@ -70,6 +80,10 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
   // وضعیت آپلود
   const [uploading, setUploading] =
     useState(false);
+
+  // پیام خطای فایل
+  const [fileError, setFileError] =
+    useState('');
 
   // =========================
   // دریافت کاربران
@@ -112,6 +126,7 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
   // =========================
 
   const handleOpenFileModal = () => {
+    setFileError('');
     setFileModalOpen(true);
   };
 
@@ -120,6 +135,7 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
   // =========================
 
   const handleCloseFileModal = () => {
+    setFileError('');
     setFileModalOpen(false);
   };
 
@@ -133,9 +149,56 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
     const file =
       event.target.files?.[0] ?? null;
 
-    if (file) {
-      setSelectedFile(file);
+    if (!file) {
+      return;
     }
+
+    // پاک کردن خطای قبلی
+    setFileError('');
+
+    // =========================
+    // بررسی فرمت فایل
+    // =========================
+
+    const isZip =
+      file.type === ALLOWED_FILE_TYPE ||
+      file.name
+        .toLowerCase()
+        .endsWith('.zip');
+
+    if (!isZip) {
+      setFileError(
+        'فقط فایل با فرمت ZIP مجاز است.',
+      );
+
+      event.target.value = '';
+
+      setSelectedFile(null);
+
+      return;
+    }
+
+    // =========================
+    // بررسی حجم فایل
+    // =========================
+
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError(
+        'حجم فایل نباید بیشتر از 10 مگابایت باشد.',
+      );
+
+      event.target.value = '';
+
+      setSelectedFile(null);
+
+      return;
+    }
+
+    // =========================
+    // فایل معتبر است
+    // =========================
+
+    setSelectedFile(file);
   };
 
   // =========================
@@ -143,8 +206,48 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
   // =========================
 
   const handleUpload = async () => {
+    // پاک کردن خطای قبلی
+    setFileError('');
+
+    // =========================
+    // بررسی انتخاب فایل
+    // =========================
+
     if (!selectedFile) {
-      alert('لطفاً ابتدا یک فایل انتخاب کنید');
+      setFileError(
+        'لطفاً ابتدا یک فایل انتخاب کنید.',
+      );
+
+      return;
+    }
+
+    // =========================
+    // بررسی مجدد فرمت
+    // =========================
+
+    const isZip =
+      selectedFile.type === ALLOWED_FILE_TYPE ||
+      selectedFile.name
+        .toLowerCase()
+        .endsWith('.zip');
+
+    if (!isZip) {
+      setFileError(
+        'فقط فایل با فرمت ZIP مجاز است.',
+      );
+
+      return;
+    }
+
+    // =========================
+    // بررسی مجدد حجم
+    // =========================
+
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      setFileError(
+        'حجم فایل نباید بیشتر از 10 مگابایت باشد.',
+      );
+
       return;
     }
 
@@ -167,11 +270,17 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
         selectedFile,
       );
 
+      setFileError('');
+
       setFileModalOpen(false);
     } catch (error) {
       console.error(
         'Upload error:',
         error,
+      );
+
+      setFileError(
+        'آپلود فایل با خطا مواجه شد.',
       );
     } finally {
       setUploading(false);
@@ -183,11 +292,20 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
   // =========================
 
   const handleSend = () => {
-    console.log('عنوان:', title);
+    console.log(
+      'عنوان:',
+      title,
+    );
 
-    console.log('متن:', text);
+    console.log(
+      'متن:',
+      text,
+    );
 
-    console.log('گیرنده:', selectedUser);
+    console.log(
+      'گیرنده:',
+      selectedUser,
+    );
 
     console.log(
       'فایل:',
@@ -196,6 +314,23 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
 
     onClose();
   };
+
+  // =========================
+  // تبدیل حجم فایل به MB
+  // =========================
+
+  const getFileSizeInMB = (
+    file: File,
+  ) => {
+    return (
+      file.size /
+      (1024 * 1024)
+    ).toFixed(2);
+  };
+
+  // =========================
+  // UI
+  // =========================
 
   return (
     <Box sx={{ p: 1 }}>
@@ -224,14 +359,19 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
       <TextField
         fullWidth
         multiline
-        rows={6}
         label="متن پیام"
         placeholder="متن پیام را وارد کنید"
         value={text}
         onChange={(event) =>
           setText(event.target.value)
         }
-        sx={{ mb: 2 }}
+        sx={{
+          mb: 2,
+          '& .MuiInputBase-root': {
+            minHeight: '350px',
+            alignItems: 'flex-start',
+          },
+        }}
       />
 
       {/* ========================= */}
@@ -254,7 +394,9 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
 
         <Button
           variant="outlined"
-          startIcon={<AttachFileIcon />}
+          startIcon={
+            <AttachFileIcon />
+          }
           onClick={
             handleOpenFileModal
           }
@@ -318,7 +460,9 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
         maxWidth="sm"
       >
 
+        {/* ========================= */}
         {/* عنوان Modal */}
+        {/* ========================= */}
 
         <DialogTitle
           sx={{
@@ -339,7 +483,9 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
           </IconButton>
         </DialogTitle>
 
+        {/* ========================= */}
         {/* محتوای Modal */}
+        {/* ========================= */}
 
         <DialogContent dividers>
 
@@ -354,7 +500,58 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
             }}
           >
 
+            {/* ========================= */}
+            {/* توضیحات محدودیت */}
+            {/* ========================= */}
+
+            <Box
+              sx={{
+                width: '100%',
+                p: 2,
+                borderRadius: 1,
+                bgcolor:
+                  'background.default',
+              }}
+            >
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                textAlign="center"
+              >
+                فقط فایل ZIP مجاز است
+              </Typography>
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                textAlign="center"
+                sx={{ mt: 0.5 }}
+              >
+                حداکثر حجم فایل: 10 مگابایت
+              </Typography>
+            </Box>
+
+            {/* ========================= */}
+            {/* پیام خطا */}
+            {/* ========================= */}
+
+            {fileError && (
+              <Alert
+                severity="error"
+                onClose={() =>
+                  setFileError('')
+                }
+                sx={{
+                  width: '100%',
+                }}
+              >
+                {fileError}
+              </Alert>
+            )}
+
+            {/* ========================= */}
             {/* انتخاب فایل */}
+            {/* ========================= */}
 
             <Button
               variant="outlined"
@@ -372,13 +569,16 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
               <input
                 type="file"
                 hidden
+                accept=".zip,application/zip"
                 onChange={
                   handleFileChange
                 }
               />
             </Button>
 
+            {/* ========================= */}
             {/* نمایش فایل */}
+            {/* ========================= */}
 
             {selectedFile && (
               <Box
@@ -415,11 +615,18 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
                   sx={{ mt: 1 }}
                 >
                   حجم فایل:{' '}
-                  {(
-                    selectedFile.size /
-                    1024
-                  ).toFixed(2)}{' '}
-                  KB
+                  {getFileSizeInMB(
+                    selectedFile,
+                  )}{' '}
+                  MB
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  color="success.main"
+                  sx={{ mt: 1 }}
+                >
+                  فایل معتبر است ✓
                 </Typography>
 
               </Box>
@@ -429,7 +636,9 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
 
         </DialogContent>
 
+        {/* ========================= */}
         {/* دکمه‌های Modal */}
+        {/* ========================= */}
 
         <DialogActions
           sx={{
@@ -437,6 +646,7 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
             pb: 2,
           }}
         >
+
           <Button
             variant="contained"
             startIcon={
@@ -477,14 +687,15 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
           }
           onClick={handleSend}
         >
-          ارسال 
+          ارسال
         </Button>
 
         <Button
           variant="outlined"
           onClick={onClose}
-          startIcon={<DoNotDisturbAltIcon />}
-
+          startIcon={
+            <DoNotDisturbAltIcon />
+          }
         >
           انصراف
         </Button>
@@ -496,4 +707,3 @@ const OnMessage = ({ onClose }: OnMessageProps) => {
 };
 
 export default OnMessage;
-

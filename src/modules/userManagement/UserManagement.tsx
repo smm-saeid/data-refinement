@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 
 import type {
@@ -13,15 +12,22 @@ import {
   Paper,
   InputAdornment,
   IconButton,
+  Typography,
 } from '@mui/material';
 
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import DeleteIcon from '@mui/icons-material/Delete';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+
 
 import axios from 'axios';
 
 import { MatnaDataGrid } from '@/components/data-grid/MatnaDataGrid';
+
 import usermanagementApi from './apis';
 import UserModal from './UserModal';
 
@@ -30,27 +36,26 @@ import type {
   UsersResponse,
 } from './types';
 
-const API_URL = 'https://dummyjson.com/users';
-
 export default function UserManagement() {
-  // --------------------------------------------------
+  // ==================================================
   // Users
-  // --------------------------------------------------
+  // ==================================================
 
   const [users, setUsers] = useState<User[]>([]);
-
   const [total, setTotal] = useState(0);
 
-  // --------------------------------------------------
+  // ==================================================
   // Search
-  // --------------------------------------------------
+  // ==================================================
 
-  const [searchTerm, setSearchTerm] =
-    useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [organization, setOrganization] = useState('');
 
-  // --------------------------------------------------
+  // ==================================================
   // Pagination
-  // --------------------------------------------------
+  // ==================================================
 
   const [paginationModel, setPaginationModel] =
     useState<GridPaginationModel>({
@@ -58,457 +63,967 @@ export default function UserManagement() {
       pageSize: 10,
     });
 
-  // --------------------------------------------------
+  // ==================================================
   // Loading / Error
-  // --------------------------------------------------
+  // ==================================================
 
-  const [isLoading, setIsLoading] =
-    useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] =
     useState<string | null>(null);
 
-  // --------------------------------------------------
+  // ==================================================
   // Modal
-  // --------------------------------------------------
+  // ==================================================
 
-  const [showModal, setShowModal] =
-    useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const [selectedUser, setSelectedUser] =
     useState<User | null>(null);
 
-  // --------------------------------------------------
-  // Fetch Users
-  // --------------------------------------------------
+  // ==================================================
+  // Fetch All Users
+  // ==================================================
 
-  const fetchUsers = useCallback(
-    async (
-      page = paginationModel.page,
-      pageSize = paginationModel.pageSize,
-      search = searchTerm,
+  const fetchAllUsers = useCallback(
+    async (): Promise<User[]> => {
+      const response =
+        await axios.get<UsersResponse>(
+          usermanagementApi.user.list,
+          {
+            params: {
+              limit: 0,
+            },
+          },
+        );
+
+      return response.data.users.map(
+        (user) => ({
+          ...user,
+
+          fullName:
+            `${user.firstName} ${user.lastName}`,
+
+          department:
+            user.company?.department ?? '-',
+        }),
+      );
+    },
+    [],
+  );
+
+  // ==================================================
+  // Filter Users
+  // ==================================================
+
+  const filterUsers = useCallback(
+    (
+      allUsers: User[],
     ) => {
+      const firstNameSearch =
+        firstName
+          .trim()
+          .toLowerCase();
+
+      const lastNameSearch =
+        lastName
+          .trim()
+          .toLowerCase();
+
+      const usernameSearch =
+        username
+          .trim()
+          .toLowerCase();
+
+      const organizationSearch =
+        organization
+          .trim()
+          .toLowerCase();
+
+      return allUsers.filter(
+        (user) => {
+          // نام
+          const firstNameMatch =
+            !firstNameSearch ||
+            user.firstName
+              ?.toLowerCase()
+              .includes(
+                firstNameSearch,
+              );
+
+          // نام خانوادگی
+          const lastNameMatch =
+            !lastNameSearch ||
+            user.lastName
+              ?.toLowerCase()
+              .includes(
+                lastNameSearch,
+              );
+
+          // نام کاربری
+          const usernameMatch =
+            !usernameSearch ||
+            user.username
+              ?.toLowerCase()
+              .includes(
+                usernameSearch,
+              );
+
+          // سازمان
+          const companyName =
+            user.company?.name
+              ?.toLowerCase() ?? '';
+
+          const department =
+            user.company?.department
+              ?.toLowerCase() ?? '';
+
+          const organizationMatch =
+            !organizationSearch ||
+            companyName.includes(
+              organizationSearch,
+            ) ||
+            department.includes(
+              organizationSearch,
+            );
+
+          return (
+            firstNameMatch &&
+            lastNameMatch &&
+            usernameMatch &&
+            organizationMatch
+          );
+        },
+      );
+    },
+    [
+      firstName,
+      lastName,
+      username,
+      organization,
+    ],
+  );
+
+  // ==================================================
+  // Search
+  // ==================================================
+
+  const handleSearchSubmit =
+    useCallback(async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        const skip = page * pageSize;
+        const allUsers =
+          await fetchAllUsers();
 
-        let url = API_URL;
+        const filteredUsers =
+          filterUsers(allUsers);
 
-        // Search
-        if (search.trim()) {
-          url = `${API_URL}/search`;
-        }
+        // رفتن به صفحه اول
+        setPaginationModel(
+          (prev) => ({
+            ...prev,
+            page: 0,
+          }),
+        );
 
-        const response =
-          await axios.get<UsersResponse>(
-            url,
-            {
-              params: {
-                limit: pageSize,
-                skip,
+        // تعداد کل
+        setTotal(
+          filteredUsers.length,
+        );
 
-                ...(search.trim() && {
-                  q: search.trim(),
-                }),
-              },
-            },
-          );
-
-        const formattedUsers =
-          response.data.users.map((user) => ({
-            ...user,
-
-            fullName:
-              `${user.firstName} ${user.lastName}`,
-
-            department:
-              user.company?.department ?? '-',
-          }));
-
-        setUsers(formattedUsers);
-
-        setTotal(response.data.total);
+        // نمایش صفحه اول
+        setUsers(
+          filteredUsers.slice(
+            0,
+            paginationModel.pageSize,
+          ),
+        );
       } catch (err: any) {
         setError(
           err?.response?.data?.message ||
             err?.message ||
-            'خطا در دریافت اطلاعات کاربران',
+            'خطا در جستجوی کاربران',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }, [
+      fetchAllUsers,
+      filterUsers,
+      paginationModel.pageSize,
+    ]);
+
+  // ==================================================
+  // Clear Search
+  // ==================================================
+
+  const handleClear = useCallback(
+    async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        setFirstName('');
+        setLastName('');
+        setUsername('');
+        setOrganization('');
+
+        setPaginationModel(
+          (prev) => ({
+            ...prev,
+            page: 0,
+          }),
+        );
+
+        const allUsers =
+          await fetchAllUsers();
+
+        setTotal(
+          allUsers.length,
+        );
+
+        setUsers(
+          allUsers.slice(
+            0,
+            paginationModel.pageSize,
+          ),
+        );
+      } catch (err: any) {
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            'خطا در دریافت کاربران',
         );
       } finally {
         setIsLoading(false);
       }
     },
     [
-      paginationModel.page,
+      fetchAllUsers,
       paginationModel.pageSize,
-      searchTerm,
     ],
   );
 
-  // --------------------------------------------------
+  // ==================================================
+  // Pagination
+  // ==================================================
+
+  const handlePaginationChange =
+    useCallback(
+      async (
+        model: GridPaginationModel,
+      ) => {
+        try {
+          setIsLoading(true);
+          setError(null);
+
+          const allUsers =
+            await fetchAllUsers();
+
+          const filteredUsers =
+            filterUsers(allUsers);
+
+          setPaginationModel(model);
+
+          setTotal(
+            filteredUsers.length,
+          );
+
+          const start =
+            model.page *
+            model.pageSize;
+
+          const end =
+            start +
+            model.pageSize;
+
+          setUsers(
+            filteredUsers.slice(
+              start,
+              end,
+            ),
+          );
+        } catch (err: any) {
+          setError(
+            err?.response?.data?.message ||
+              err?.message ||
+              'خطا در دریافت کاربران',
+          );
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      [
+        fetchAllUsers,
+        filterUsers,
+      ],
+    );
+
+  // ==================================================
   // Open Create Modal
-  // --------------------------------------------------
+  // ==================================================
 
   const handleOpenCreate = () => {
     setSelectedUser(null);
     setShowModal(true);
   };
 
-  // --------------------------------------------------
+  // ==================================================
   // Open Edit Modal
-  // --------------------------------------------------
+  // ==================================================
 
-  const handleOpenEdit = (user: User) => {
+  const handleOpenEdit = (
+    user: User,
+  ) => {
     setSelectedUser(user);
     setShowModal(true);
   };
 
-  // --------------------------------------------------
+  // ==================================================
   // Close Modal
-  // --------------------------------------------------
+  // ==================================================
 
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedUser(null);
   };
 
-  // --------------------------------------------------
+  // ==================================================
   // Modal Success
-  // --------------------------------------------------
+  // ==================================================
 
   const handleModalSuccess = (
     savedUser: User,
   ) => {
-    setUsers((prev) => {
-      const exists = prev.some(
-        (user) =>
-          user.id === savedUser.id,
-      );
+    const formattedUser: User = {
+      ...savedUser,
 
-      // Edit
+      fullName:
+        `${savedUser.firstName} ${savedUser.lastName}`,
+
+      department:
+        savedUser.company?.department ??
+        '-',
+    };
+
+    setUsers((prev) => {
+      const exists =
+        prev.some(
+          (user) =>
+            user.id ===
+            formattedUser.id,
+        );
+
+      // ویرایش
       if (exists) {
-        return prev.map((user) =>
-          user.id === savedUser.id
-            ? savedUser
-            : user,
+        return prev.map(
+          (user) =>
+            user.id ===
+            formattedUser.id
+              ? formattedUser
+              : user,
         );
       }
 
-      // Create
-      return [savedUser, ...prev];
+      // ایجاد
+      return [
+        formattedUser,
+        ...prev,
+      ];
     });
 
-    // فقط در حالت Create تعداد را افزایش بده
+    // اگر کاربر جدید است
     if (!selectedUser) {
-      setTotal((prev) => prev + 1);
+      setTotal(
+        (prev) => prev + 1,
+      );
+    }
+
+    handleCloseModal();
+  };
+
+  // ==================================================
+  // Delete User
+  // ==================================================
+
+  const handleDelete = async (
+    user: User,
+  ) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await axios.delete(
+        usermanagementApi.user.delete(
+          user.id,
+        ),
+      );
+
+      setUsers((prev) =>
+        prev.filter(
+          (item) =>
+            item.id !== user.id,
+        ),
+      );
+
+      setTotal(
+        (prev) =>
+          Math.max(
+            0,
+            prev - 1,
+          ),
+      );
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'خطا در حذف کاربر',
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // --------------------------------------------------
-  // Search
-  // --------------------------------------------------
+  // ==================================================
+  // Lock User
+  // ==================================================
 
-  const handleSearchSubmit = useCallback(() => {
-    setPaginationModel((prev) => ({
-      ...prev,
-      page: 0,
-    }));
-
-    fetchUsers(
-      0,
-      paginationModel.pageSize,
-      searchTerm,
-    );
-  }, [
-    fetchUsers,
-    paginationModel.pageSize,
-    searchTerm,
-  ]);
-
-  // --------------------------------------------------
-  
-const handleDelete = async (user: User) => {
-  try {
-    setIsLoading(true);
-    setError(null);
-
-    await axios.delete(
-      usermanagementApi.user.delete(user.id),
-    );
-
+  const handleLockUser = (
+    user: User,
+  ) => {
     setUsers((prev) =>
-      prev.filter(
-        (item) => item.id !== user.id,
+      prev.map(
+        (item) =>
+          item.id === user.id
+            ? {
+                ...item,
+                isLocked: true,
+              }
+            : item,
       ),
     );
+  };
 
-    setTotal((prev) => prev - 1);
-  } catch (err: any) {
-    setError(
-      err?.response?.data?.message ||
-        err?.message ||
-        'خطا در حذف کاربر',
+  // ==================================================
+  // Unlock User
+  // ==================================================
+
+  const handleUnlockUser = (
+    user: User,
+  ) => {
+    setUsers((prev) =>
+      prev.map(
+        (item) =>
+          item.id === user.id
+            ? {
+                ...item,
+                isLocked: false,
+              }
+            : item,
+      ),
     );
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
-  // --------------------------------------------------
+  // ==================================================
+  // Columns
+  // ==================================================
 
-  const handleClear = useCallback(() => {
-    setSearchTerm('');
+  const columns: GridColDef[] = [
+    {
+      field: 'firstName',
+      headerName: 'نام',
+      flex: 1,
+      minWidth: 140,
+    },
 
-    setPaginationModel((prev) => ({
-      ...prev,
-      page: 0,
-    }));
+    {
+      field: 'lastName',
+      headerName: 'نام خانوادگی',
+      flex: 1,
+      minWidth: 160,
+    },
 
-    fetchUsers(
-      0,
-      paginationModel.pageSize,
-      '',
-    );
-  }, [
-    fetchUsers,
-    paginationModel.pageSize,
-  ]);
+    {
+      field: 'username',
+      headerName: 'نام کاربری',
+      flex: 1,
+      minWidth: 160,
+    },
 
-  // --------------------------------------------------
-  // Pagination
-  // --------------------------------------------------
+    {
+      field: 'organization',
+      headerName: 'سازمان',
+      flex: 1,
+      minWidth: 180,
 
-  const handlePaginationChange =
-    useCallback(
-      (model: GridPaginationModel) => {
-        setPaginationModel(model);
+      valueGetter: (
+        _value,
+        row,
+      ) =>
+        row.company?.name ?? '-',
+    },
 
-        fetchUsers(
-          model.page,
-          model.pageSize,
-          searchTerm,
+    {
+      field: 'actions',
+      headerName: 'عملیات',
+      width: 150,
+      sortable: false,
+      filterable: false,
+      align: 'center',
+      headerAlign: 'center',
+
+      renderCell: (
+        params,
+      ) => {
+        const isLocked =
+          params.row.isLocked ??
+          false;
+
+        return (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems:
+                'center',
+              justifyContent:
+                'center',
+              gap: 0.5,
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            {/* حذف */}
+
+            <IconButton
+              color="error"
+              size="small"
+              onClick={() =>
+                handleDelete(
+                  params.row,
+                )
+              }
+              title="حذف کاربر"
+            >
+              <DeleteIcon />
+            </IconButton>
+
+            {/* قفل / باز کردن */}
+
+            <IconButton
+              color={
+                isLocked
+                  ? 'success'
+                  : 'warning'
+              }
+              size="small"
+              onClick={() => {
+                if (isLocked) {
+                  handleUnlockUser(
+                    params.row,
+                  );
+                } else {
+                  handleLockUser(
+                    params.row,
+                  );
+                }
+              }}
+              title={
+                isLocked
+                  ? 'باز کردن قفل'
+                  : 'قفل کردن'
+              }
+            >
+              {isLocked ? (
+                <LockOpenIcon />
+              ) : (
+                <LockIcon />
+              )}
+            </IconButton>
+          </Box>
         );
       },
-      [fetchUsers, searchTerm],
-    );
+    },
+  ];
 
-  // --------------------------------------------------
-  // Columns
-  // --------------------------------------------------
-
- const columns: GridColDef[] = [
-  {
-    field: 'id',
-    headerName: 'شناسه',
-    width: 90,
-  },
-
-  {
-    field: 'fullName',
-    headerName: 'نام و نام خانوادگی',
-    flex: 1,
-    minWidth: 200,
-  },
-
-  {
-    field: 'username',
-    headerName: 'نام کاربری',
-    flex: 1,
-    minWidth: 160,
-  },
-
-  {
-    field: 'phone',
-    headerName: 'شماره تماس',
-    width: 180,
-  },
-
-  {
-    field: 'gender',
-    headerName: 'جنسیت',
-    width: 120,
-  },
-
-  {
-    field: 'age',
-    headerName: 'سن',
-    width: 90,
-  },
-
-  {
-    field: 'department',
-    headerName: 'دپارتمان',
-    flex: 1,
-    minWidth: 160,
-  },
-
-  {
-    field: 'actions',
-    headerName: 'عملیات',
-    width: 180,
-    sortable: false,
-    filterable: false,
-
-    renderCell: (params) => (
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          alignItems: 'center',
-          height: '100%',
-        }}
-      >
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() =>
-            handleOpenEdit(params.row)
-          }
-        >
-          ویرایش
-        </Button>
-
-        <Button
-          variant="outlined"
-          color="error"
-          size="small"
-          onClick={() =>
-            handleDelete(params.row)
-          }
-        >
-          حذف
-        </Button>
-      </Box>
-    ),
-  },
-];
-  // --------------------------------------------------
+  // ==================================================
   // Render
-  // --------------------------------------------------
+  // ==================================================
 
   return (
     <Box
       dir="rtl"
       sx={{
         p: 3,
-
         display: 'flex',
-
         flexDirection: 'column',
-
         gap: 3,
       }}
     >
-      {/* -------------------------------------------- */}
-      {/* Search */}
-      {/* -------------------------------------------- */}
+      {/* ==================================================
+          Search Panel
+          ================================================== */}
 
+<Box
+  sx={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 1,
+    mb: 2,
+    direction: 'ltr',
+  }}
+>
+  <PeopleAltIcon
+    sx={{
+      fontSize: 30,
+      color: '#212121',
+    }}
+  />
+
+  <Typography
+    variant="h5"
+    sx={{
+      fontWeight: 700,
+      color: '#212121',
+      textAlign: 'right',
+    }}
+  >
+    مدیریت کاربران
+  </Typography>
+</Box>      
       <Paper
         elevation={0}
         sx={{
           p: 2,
-
           display: 'flex',
-
-          alignItems: 'center',
-
+          flexDirection: 'column',
           gap: 2,
-
           border: '1px solid',
-
           borderColor: 'divider',
-
           borderRadius: 2,
         }}
       >
-        <TextField
-          fullWidth
-          size="small"
-          value={searchTerm}
-          onChange={(e) =>
-            setSearchTerm(e.target.value)
-          }
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearchSubmit();
-            }
-          }}
-          placeholder="جستجوی نام، نام کاربری یا ایمیل..."
-          InputProps={{
-            startAdornment: (
-              <InputAdornment
-                position="start"
-              >
-                <SearchIcon />
-              </InputAdornment>
-            ),
+        {/* Search Fields */}
 
-            endAdornment: searchTerm ? (
-              <InputAdornment
-                position="end"
-              >
-                <IconButton
-                  size="small"
-                  onClick={handleClear}
-                >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ) : null,
-          }}
+        <Box
           sx={{
-            maxWidth: 500,
+            display: 'grid',
 
-            '& .MuiOutlinedInput-root': {
-              backgroundColor:
-                'background.default',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: '1fr 1fr',
             },
+
+            gap: 2,
+
+            width: '100%',
           }}
-        />
-
-        {/* Search Button */}
-
-        <Button
-          variant="contained"
-          onClick={handleSearchSubmit}
-          sx={{ whiteSpace: 'nowrap',backgroundColor:"green" }}
         >
-          جستجو
-        </Button>
+          {/* نام */}
 
-        {/* Create Button */}
+          <TextField
+            fullWidth
+            size="small"
+            label="نام"
+            value={firstName}
+            onChange={(e) =>
+              setFirstName(
+                e.target.value,
+              )
+            }
+            onKeyDown={(e) => {
+              if (
+                e.key === 'Enter'
+              ) {
+                handleSearchSubmit();
+              }
+            }}
+            placeholder="جستجوی نام"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
 
-        <Button
-          variant="contained"
-          onClick={handleOpenCreate}
-          startIcon={<PersonAddIcon />}
-          disabled={isLoading}
-           sx={{ whiteSpace: 'nowrap',  ml: 'auto',backgroundColor:"green" }}
+                endAdornment:
+                  firstName ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setFirstName('')
+                        }
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+              },
+            }}
+          />
+
+          {/* نام خانوادگی */}
+
+          <TextField
+            fullWidth
+            size="small"
+            label="نام خانوادگی"
+            value={lastName}
+            onChange={(e) =>
+              setLastName(
+                e.target.value,
+              )
+            }
+            onKeyDown={(e) => {
+              if (
+                e.key === 'Enter'
+              ) {
+                handleSearchSubmit();
+              }
+            }}
+            placeholder="جستجوی نام خانوادگی"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+
+                endAdornment:
+                  lastName ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setLastName('')
+                        }
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+              },
+            }}
+          />
+
+          {/* نام کاربری */}
+
+          <TextField
+            fullWidth
+            size="small"
+            label="نام کاربری"
+            value={username}
+            onChange={(e) =>
+              setUsername(
+                e.target.value,
+              )
+            }
+            onKeyDown={(e) => {
+              if (
+                e.key === 'Enter'
+              ) {
+                handleSearchSubmit();
+              }
+            }}
+            placeholder="جستجوی نام کاربری"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+
+                endAdornment:
+                  username ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setUsername('')
+                        }
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+              },
+            }}
+          />
+
+          {/* سازمان */}
+
+          <TextField
+            fullWidth
+            size="small"
+            label="سازمان"
+            value={organization}
+            onChange={(e) =>
+              setOrganization(
+                e.target.value,
+              )
+            }
+            onKeyDown={(e) => {
+              if (
+                e.key === 'Enter'
+              ) {
+                handleSearchSubmit();
+              }
+            }}
+            placeholder="جستجوی سازمان"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+
+                endAdornment:
+                  organization ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setOrganization(
+                            '',
+                          )
+                        }
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+              },
+            }}
+          />
+        </Box>
+
+        {/* Buttons */}
+
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1.5,
+            width: '100%',
+          }}
         >
-          ایجاد کاربر جدید
-        </Button>
+          {/* ایجاد کاربر */}
+
+          <Button
+            variant="contained"
+            onClick={
+              handleOpenCreate
+            }
+            startIcon={
+              <PersonAddIcon />
+            }
+            disabled={isLoading}
+            sx={{
+              minWidth: 150,
+              height: 40,
+              whiteSpace: 'nowrap',
+              backgroundColor:
+                '#2e7d32',
+
+              '&:hover': {
+                backgroundColor:
+                  '#1b5e20',
+              },
+            }}
+          >
+            ایجاد کاربر جدید
+          </Button>
+
+          {/* جستجو */}
+
+          <Button
+            variant="contained"
+            onClick={
+              handleSearchSubmit
+            }
+            startIcon={
+              <SearchIcon />
+            }
+            disabled={isLoading}
+            sx={{
+              minWidth: 100,
+              height: 40,
+              whiteSpace: 'nowrap',
+              backgroundColor:
+                '#2e7d32',
+
+              '&:hover': {
+                backgroundColor:
+                  '#1b5e20',
+              },
+            }}
+          >
+            جستجو
+          </Button>
+
+          {/* پاک کردن */}
+
+          <Button
+            variant="contained"
+            onClick={handleClear}
+            startIcon={
+              <ClearIcon />
+            }
+            disabled={
+              isLoading ||
+              (
+                !firstName &&
+                !lastName &&
+                !username &&
+                !organization
+              )
+            }
+            sx={{
+              minWidth: 100,
+              height: 40,
+              whiteSpace: 'nowrap',
+              backgroundColor:
+                '#2e7d32',
+
+              '&:hover': {
+                backgroundColor:
+                  '#1b5e20',
+              },
+            }}
+          >
+            پاک کردن
+          </Button>
+        </Box>
       </Paper>
 
-      {/* -------------------------------------------- */}
-      {/* Error */}
-      {/* -------------------------------------------- */}
+      {/* ==================================================
+          Error
+          ================================================== */}
 
       {error && (
         <Paper
           sx={{
             p: 2,
             bgcolor: 'error.light',
+            color:
+              'error.contrastText',
+            borderRadius: 2,
           }}
         >
           {error}
         </Paper>
       )}
 
-      {/* -------------------------------------------- */}
-      {/* DataGrid */}
-      {/* -------------------------------------------- */}
+      {/* ==================================================
+          DataGrid
+          ================================================== */}
 
       <MatnaDataGrid
         rows={users}
@@ -522,19 +1037,67 @@ const handleDelete = async (user: User) => {
         onPaginationModelChange={
           handlePaginationChange
         }
+        sx={{
+          // هدر آبی
+          '& .MuiDataGrid-columnHeaders':
+            {
+              backgroundColor:
+                '#1976d2',
+              color: '#fff',
+            },
+
+          '& .MuiDataGrid-columnHeader':
+            {
+              backgroundColor:
+                '#1976d2',
+            },
+
+          '& .MuiDataGrid-columnHeaderTitle':
+            {
+              color: '#fff',
+              fontWeight: 'bold',
+            },
+
+          '& .MuiDataGrid-sortIcon':
+            {
+              color: '#fff',
+            },
+
+          '& .MuiDataGrid-menuIconButton':
+            {
+              color: '#fff',
+            },
+
+          // وسط‌چین کردن هدر
+          '& .MuiDataGrid-columnHeaderTitleContainer':
+            {
+              justifyContent:
+                'center',
+            },
+
+          // وسط‌چین کردن سلول‌ها
+          '& .MuiDataGrid-cell':
+            {
+              display: 'flex',
+              alignItems: 'center',
+            },
+        }}
       />
 
-      {/* -------------------------------------------- */}
-      {/* User Modal */}
-      {/* -------------------------------------------- */}
+      {/* ==================================================
+          User Modal
+          ================================================== */}
 
       <UserModal
         open={showModal}
         user={selectedUser}
-        onClose={handleCloseModal}
-        onSuccess={handleModalSuccess}
+        onClose={
+          handleCloseModal
+        }
+        onSuccess={
+          handleModalSuccess
+        }
       />
     </Box>
   );
 }
-

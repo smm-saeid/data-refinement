@@ -2,11 +2,28 @@ const module = 'https://dummyjson.com/users';
 
 const usermanagementApi = {
   user: {
-    // List all elites
+    // دریافت لیست کاربران
     list: `${module}`,
-   delete: (id: number) => `${module}/${id}`,
 
-  }
+    // جستجوی کاربران
+    search: (query: string) =>
+      `${module}/search?q=${encodeURIComponent(query)}`,
+
+    // دریافت یک کاربر
+    getById: (id: number) =>
+      `${module}/${id}`,
+
+    // ایجاد کاربر
+    create: `${module}/add`,
+
+    // ویرایش کاربر
+    update: (id: number) =>
+      `${module}/${id}`,
+
+    // حذف کاربر
+    delete: (id: number) =>
+      `${module}/${id}`,
+  },
 };
 
 export default usermanagementApi;
