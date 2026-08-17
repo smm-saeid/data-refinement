@@ -16,8 +16,6 @@ import persian_fa from 'react-date-object/locales/persian_fa';
 import InputIcon from 'react-multi-date-picker/components/input_icon';
 import { GridSearchIcon } from '@mui/x-data-grid';
 import CachedIcon from '@mui/icons-material/Cached';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TuneIcon from '@mui/icons-material/Tune';
 // import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -29,6 +27,9 @@ import NewCart from './newCart';
 import Month from './monthInput';
 import NoInput from './noInput';
 import type { GridRowSelectionModel } from '@mui/x-data-grid';
+import ExcelBtn from './ExcelBtn';
+import DeleteBtn from './DeleteBtn';
+
 const styles = {
   width: '150px',
   height: '50px',
@@ -168,16 +169,6 @@ export default function Cartable() {
     type: 'include',
     ids: new Set(),
   });
-
-  const handleDelete = () => {
-    setRows(rows => rows.filter(row => !selectedRows.ids.has(row.id)));
-    console.log(rows.filter(row => selectedRows.ids.has(row.id)));
-
-    setSelectedRows({
-      type: 'include',
-      ids: new Set(),
-    });
-  };
 
   const process = ['ارسال', 'دریافت'];
   const forces = [
@@ -409,14 +400,13 @@ export default function Cartable() {
           }}
         >
           <NewCart />
-          <Button onClick={handleDelete} variant="contained" size="medium">
-            <DeleteIcon />
-            حذف موارد انتخابی
-          </Button>
-          <Button variant="contained" size="medium">
-            <FileCopyIcon />
-            خروجی اکسل
-          </Button>
+          <DeleteBtn
+            rows={rows}
+            setRows={setRows}
+            selectedRows={selectedRows}
+            setSelectedRows={setSelectedRows}
+          />
+          <ExcelBtn rows={rows} columns={columns} />
           <Button variant="contained" size="medium">
             <PictureAsPdfIcon />
             خروجی پی دی اف
@@ -447,7 +437,7 @@ export default function Cartable() {
             }}
             pageSizeOptions={[5]}
             checkboxSelection
-            // disableRowSelectionOnClick
+            disableRowSelectionOnClick
           />
         </Box>
       </Box>
