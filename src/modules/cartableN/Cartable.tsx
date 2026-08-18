@@ -16,7 +16,6 @@ import persian_fa from 'react-date-object/locales/persian_fa';
 import InputIcon from 'react-multi-date-picker/components/input_icon';
 import { GridSearchIcon } from '@mui/x-data-grid';
 import CachedIcon from '@mui/icons-material/Cached';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import TuneIcon from '@mui/icons-material/Tune';
 // import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import type { GridColDef } from '@mui/x-data-grid';
@@ -29,6 +28,8 @@ import NoInput from './noInput';
 import type { GridRowSelectionModel } from '@mui/x-data-grid';
 import ExcelBtn from './ExcelBtn';
 import DeleteBtn from './DeleteBtn';
+import PdfBtn from './PdfBtn';
+import data from './data.json';
 
 const styles = {
   width: '150px',
@@ -36,53 +37,7 @@ const styles = {
   fontSize: '16px',
 };
 
-const gridData = [
-  {
-    id: 1,
-    watched: true,
-    month: 6,
-    year: 14,
-    fileDet: 'نامعلوم',
-    description: 'توضیح',
-    orderNum: 10052,
-    yegan: '56325',
-    force: 'هوایی',
-    sender: 'زمینی',
-    curYegan: 1527,
-    processStatus: 'تایید',
-    fileNum: '352',
-  },
-  {
-    id: 2,
-    watched: false,
-    month: 6,
-    year: 14,
-    fileDet: 'نامعلوم',
-    description: 'توضیح',
-    orderNum: 10052,
-    yegan: '56325',
-    force: 'هوایی',
-    sender: 'زمینی',
-    curYegan: 1527,
-    processStatus: 'تایید',
-    fileNum: '352',
-  },
-  {
-    id: 3,
-    watched: true,
-    month: 6,
-    year: 14,
-    fileDet: 'نامعلوم',
-    description: 'توضیح',
-    orderNum: 10052,
-    yegan: '56325',
-    force: 'هوایی',
-    sender: 'زمینی',
-    curYegan: 1527,
-    processStatus: 'تایید',
-    fileNum: '352',
-  },
-];
+const gridData = data;
 
 export default function Cartable() {
   const columns: GridColDef<(typeof rows)[number]>[] = [
@@ -407,10 +362,7 @@ export default function Cartable() {
             setSelectedRows={setSelectedRows}
           />
           <ExcelBtn rows={rows} columns={columns} />
-          <Button variant="contained" size="medium">
-            <PictureAsPdfIcon />
-            خروجی پی دی اف
-          </Button>
+          <PdfBtn rows={rows} columns={columns} />
           <Button variant="contained" size="medium">
             تهیه خروجی داده ها
           </Button>

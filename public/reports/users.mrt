@@ -1,0 +1,428 @@
+{
+  "ReportVersion": "2023.1.1",
+  "ReportGuid": "7b51c9b8b2c205109916ba801c0121c0",
+  "ReportName": "Report",
+  "ReportAlias": "Report",
+  "ReportFile": "users.mrt",
+  "ReportCreated": "/Date(1787062959000+0330)/",
+  "ReportChanged": "/Date(1787063372000+0330)/",
+  "EngineVersion": "EngineV2",
+  "CalculationMode": "Interpretation",
+  "ReportUnit": "Centimeters",
+  "Pages": {
+    "0": {
+      "Ident": "StiPage",
+      "Name": "Page1",
+      "Guid": "9c4473a50f75e783fdf72370265e9b39",
+      "Interaction": {
+        "Ident": "StiInteraction"
+      },
+      "Border": ";;2;;;;;solid:Black",
+      "Brush": "solid:",
+      "Components": {
+        "0": {
+          "Ident": "StiText",
+          "Name": "Text1",
+          "ClientRectangle": "3.4,6.2,11,1.8",
+          "Interaction": {
+            "Ident": "StiInteraction"
+          },
+          "Text": {
+            "Value": "لیست کاربران\r\n"
+          },
+          "HorAlignment": "Center",
+          "VertAlignment": "Center",
+          "Font": ";18;;",
+          "Border": ";;;;;;;solid:Black",
+          "Brush": "solid:",
+          "TextBrush": "solid:Black",
+          "Type": "Expression"
+        },
+        "1": {
+          "Ident": "StiTable",
+          "Name": "Table1",
+          "ClientRectangle": "0,0.4,19.01,4",
+          "Interaction": {
+            "Ident": "StiBandInteraction"
+          },
+          "Border": ";;;;;;;solid:Black",
+          "Brush": "solid:",
+          "Components": {
+            "0": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell1",
+              "ClientRectangle": "0,0,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "ID"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";14;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "Type": "Expression",
+              "ID": 0
+            },
+            "1": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell2",
+              "ClientRectangle": "3.8,0,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "حقوق"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";14;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "Type": "Expression",
+              "ID": 1
+            },
+            "2": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell3",
+              "ClientRectangle": "7.6,0,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "شهر\r\n"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";14;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "Type": "Expression",
+              "ID": 2
+            },
+            "3": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell4",
+              "ClientRectangle": "11.4,0,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "سن\r\n"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";14;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "Type": "Expression",
+              "ID": 3
+            },
+            "4": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell5",
+              "ClientRectangle": "15.2,0,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "نام"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";14;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "Type": "Expression",
+              "ID": 4
+            },
+            "5": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell6",
+              "ClientRectangle": "0,0.8,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 5
+            },
+            "6": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell7",
+              "ClientRectangle": "3.8,0.8,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 6
+            },
+            "7": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell8",
+              "ClientRectangle": "7.6,0.8,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 7
+            },
+            "8": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell9",
+              "ClientRectangle": "11.4,0.8,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 8
+            },
+            "9": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell10",
+              "ClientRectangle": "15.2,0.8,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 9
+            },
+            "10": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell11",
+              "ClientRectangle": "0,1.6,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 10
+            },
+            "11": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell12",
+              "ClientRectangle": "3.8,1.6,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 11
+            },
+            "12": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell13",
+              "ClientRectangle": "7.6,1.6,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 12
+            },
+            "13": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell14",
+              "ClientRectangle": "11.4,1.6,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 13
+            },
+            "14": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell15",
+              "ClientRectangle": "15.2,1.6,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 14
+            },
+            "15": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell16",
+              "ClientRectangle": "0,2.4,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 15
+            },
+            "16": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell17",
+              "ClientRectangle": "3.8,2.4,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 16
+            },
+            "17": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell18",
+              "ClientRectangle": "7.6,2.4,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 17
+            },
+            "18": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell19",
+              "ClientRectangle": "11.4,2.4,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 18
+            },
+            "19": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell20",
+              "ClientRectangle": "15.2,2.4,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 19
+            },
+            "20": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell21",
+              "ClientRectangle": "0,3.2,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 20
+            },
+            "21": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell22",
+              "ClientRectangle": "3.8,3.2,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 21
+            },
+            "22": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell23",
+              "ClientRectangle": "7.6,3.2,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 22
+            },
+            "23": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell24",
+              "ClientRectangle": "11.4,3.2,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 23
+            },
+            "24": {
+              "Ident": "StiTableCell",
+              "Name": "Table1_Cell25",
+              "ClientRectangle": "15.2,3.2,3.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:",
+              "TextBrush": "solid:Black",
+              "ID": 24
+            }
+          },
+          "NumberID": 25
+        }
+      },
+      "PageWidth": 21.01,
+      "PageHeight": 29.69,
+      "Watermark": {
+        "TextBrush": "solid:50,0,0,0"
+      },
+      "Margins": {
+        "Left": 1,
+        "Right": 1,
+        "Top": 1,
+        "Bottom": 1
+      }
+    }
+  }
+}
