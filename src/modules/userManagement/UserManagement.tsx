@@ -13,6 +13,10 @@ import {
   InputAdornment,
   IconButton,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 
 import SearchIcon from '@mui/icons-material/Search';
@@ -22,7 +26,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-
 
 import axios from 'axios';
 
@@ -36,22 +39,55 @@ import type {
   UsersResponse,
 } from './types';
 
+// ==================================================
+// User Status
+// ==================================================
+
+type UserStatus =
+  | 'all'
+  | 'active'
+  | 'locked';
+
+// ==================================================
+// LocalStorage Key
+// ==================================================
+
+const LOCKED_USERS_KEY =
+  'locked_users';
+
 export default function UserManagement() {
   // ==================================================
   // Users
   // ==================================================
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [total, setTotal] = useState(0);
+  const [users, setUsers] =
+    useState<User[]>([]);
+
+  const [total, setTotal] =
+    useState(0);
 
   // ==================================================
   // Search
   // ==================================================
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
-  const [organization, setOrganization] = useState('');
+  const [firstName, setFirstName] =
+    useState('');
+
+  const [lastName, setLastName] =
+    useState('');
+
+  const [username, setUsername] =
+    useState('');
+
+  const [organization, setOrganization] =
+    useState('');
+
+  // ==================================================
+  // User Status
+  // ==================================================
+
+  const [userStatus, setUserStatus] =
+    useState<UserStatus>('all');
 
   // ==================================================
   // Pagination
@@ -67,7 +103,9 @@ export default function UserManagement() {
   // Loading / Error
   // ==================================================
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] =
+    useState(false);
+
   const [error, setError] =
     useState<string | null>(null);
 
@@ -75,133 +113,272 @@ export default function UserManagement() {
   // Modal
   // ==================================================
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] =
+    useState(false);
 
   const [selectedUser, setSelectedUser] =
     useState<User | null>(null);
 
   // ==================================================
+  // Get Locked User IDs
+  // ==================================================
+
+  const getLockedUserIds =
+    useCallback((): number[] => {
+      try {
+        const data =
+          localStorage.getItem(
+            LOCKED_USERS_KEY,
+          );
+
+        if (!data) {
+          return [];
+        }
+
+        const parsed =
+          JSON.parse(data);
+
+        return Array.isArray(parsed)
+          ? parsed
+          : [];
+      } catch {
+        return [];
+      }
+    }, []);
+
+  // ==================================================
+  // Save Locked User IDs
+  // ==================================================
+
+  const saveLockedUserIds =
+    useCallback(
+      (ids: number[]) => {
+        localStorage.setItem(
+          LOCKED_USERS_KEY,
+          JSON.stringify(ids),
+        );
+      },
+      [],
+    );
+
+  // ==================================================
   // Fetch All Users
   // ==================================================
 
-  const fetchAllUsers = useCallback(
-    async (): Promise<User[]> => {
-      const response =
-        await axios.get<UsersResponse>(
-          usermanagementApi.user.list,
-          {
-            params: {
-              limit: 0,
+  const fetchAllUsers =
+    useCallback(
+      async (): Promise<User[]> => {
+        const response =
+          await axios.get<UsersResponse>(
+            usermanagementApi.user.list,
+            {
+              params: {
+                limit: 0,
+              },
             },
-          },
+          );
+
+        // دریافت کاربران قفل شده
+        const lockedUserIds =
+          getLockedUserIds();
+
+        return response.data.users.map(
+          (user) => ({
+            ...user,
+
+            fullName:
+              `${user.firstName} ${user.lastName}`,
+
+            department:
+              user.company?.department ??
+              '-',
+
+            // وضعیت قفل از localStorage
+            isLocked:
+              lockedUserIds.includes(
+                user.id,
+              ),
+          }),
         );
-
-      return response.data.users.map(
-        (user) => ({
-          ...user,
-
-          fullName:
-            `${user.firstName} ${user.lastName}`,
-
-          department:
-            user.company?.department ?? '-',
-        }),
-      );
-    },
-    [],
-  );
+      },
+      [
+        getLockedUserIds,
+      ],
+    );
 
   // ==================================================
   // Filter Users
   // ==================================================
 
-  const filterUsers = useCallback(
-    (
-      allUsers: User[],
-    ) => {
-      const firstNameSearch =
-        firstName
-          .trim()
-          .toLowerCase();
+  const filterUsers =
+    useCallback(
+      (
+        allUsers: User[],
+      ): User[] => {
+        const firstNameSearch =
+          firstName
+            .trim()
+            .toLowerCase();
 
-      const lastNameSearch =
-        lastName
-          .trim()
-          .toLowerCase();
+        const lastNameSearch =
+          lastName
+            .trim()
+            .toLowerCase();
 
-      const usernameSearch =
-        username
-          .trim()
-          .toLowerCase();
+        const usernameSearch =
+          username
+            .trim()
+            .toLowerCase();
 
-      const organizationSearch =
-        organization
-          .trim()
-          .toLowerCase();
+        const organizationSearch =
+          organization
+            .trim()
+            .toLowerCase();
 
-      return allUsers.filter(
-        (user) => {
-          // نام
-          const firstNameMatch =
-            !firstNameSearch ||
-            user.firstName
-              ?.toLowerCase()
-              .includes(
-                firstNameSearch,
+        return allUsers.filter(
+          (user) => {
+            // ==========================================
+            // وضعیت کاربر
+            // ==========================================
+
+            const isLocked =
+              user.isLocked === true;
+
+            const statusMatch =
+              userStatus === 'all' ||
+              (
+                userStatus === 'locked' &&
+                isLocked
+              ) ||
+              (
+                userStatus === 'active' &&
+                !isLocked
               );
 
-          // نام خانوادگی
-          const lastNameMatch =
-            !lastNameSearch ||
-            user.lastName
-              ?.toLowerCase()
-              .includes(
-                lastNameSearch,
+            // ==========================================
+            // نام
+            // ==========================================
+
+            const firstNameMatch =
+              !firstNameSearch ||
+              user.firstName
+                ?.toLowerCase()
+                .includes(
+                  firstNameSearch,
+                );
+
+            // ==========================================
+            // نام خانوادگی
+            // ==========================================
+
+            const lastNameMatch =
+              !lastNameSearch ||
+              user.lastName
+                ?.toLowerCase()
+                .includes(
+                  lastNameSearch,
+                );
+
+            // ==========================================
+            // نام کاربری
+            // ==========================================
+
+            const usernameMatch =
+              !usernameSearch ||
+              user.username
+                ?.toLowerCase()
+                .includes(
+                  usernameSearch,
+                );
+
+            // ==========================================
+            // سازمان
+            // ==========================================
+
+            const companyName =
+              user.company?.name
+                ?.toLowerCase() ?? '';
+
+            const department =
+              user.company?.department
+                ?.toLowerCase() ?? '';
+
+            const organizationMatch =
+              !organizationSearch ||
+              companyName.includes(
+                organizationSearch,
+              ) ||
+              department.includes(
+                organizationSearch,
               );
 
-          // نام کاربری
-          const usernameMatch =
-            !usernameSearch ||
-            user.username
-              ?.toLowerCase()
-              .includes(
-                usernameSearch,
-              );
+            // ==========================================
+            // نتیجه
+            // ==========================================
 
-          // سازمان
-          const companyName =
-            user.company?.name
-              ?.toLowerCase() ?? '';
-
-          const department =
-            user.company?.department
-              ?.toLowerCase() ?? '';
-
-          const organizationMatch =
-            !organizationSearch ||
-            companyName.includes(
-              organizationSearch,
-            ) ||
-            department.includes(
-              organizationSearch,
+            return (
+              statusMatch &&
+              firstNameMatch &&
+              lastNameMatch &&
+              usernameMatch &&
+              organizationMatch
             );
+          },
+        );
+      },
+      [
+        firstName,
+        lastName,
+        username,
+        organization,
+        userStatus,
+      ],
+    );
 
-          return (
-            firstNameMatch &&
-            lastNameMatch &&
-            usernameMatch &&
-            organizationMatch
-          );
-        },
-      );
-    },
-    [
-      firstName,
-      lastName,
-      username,
-      organization,
-    ],
-  );
+  // ==================================================
+  // Refresh Table
+  // ==================================================
+
+  const refreshUsers =
+    useCallback(
+      async (
+        page = 0,
+        pageSize = paginationModel.pageSize,
+      ) => {
+        const allUsers =
+          await fetchAllUsers();
+
+        const filteredUsers =
+          filterUsers(allUsers);
+
+        const start =
+          page * pageSize;
+
+        const end =
+          start + pageSize;
+
+        setTotal(
+          filteredUsers.length,
+        );
+
+        setUsers(
+          filteredUsers.slice(
+            start,
+            end,
+          ),
+        );
+
+        setPaginationModel({
+          page,
+          pageSize,
+        });
+      },
+      [
+        fetchAllUsers,
+        filterUsers,
+        paginationModel.pageSize,
+      ],
+    );
 
   // ==================================================
   // Search
@@ -213,31 +390,9 @@ export default function UserManagement() {
         setIsLoading(true);
         setError(null);
 
-        const allUsers =
-          await fetchAllUsers();
-
-        const filteredUsers =
-          filterUsers(allUsers);
-
-        // رفتن به صفحه اول
-        setPaginationModel(
-          (prev) => ({
-            ...prev,
-            page: 0,
-          }),
-        );
-
-        // تعداد کل
-        setTotal(
-          filteredUsers.length,
-        );
-
-        // نمایش صفحه اول
-        setUsers(
-          filteredUsers.slice(
-            0,
-            paginationModel.pageSize,
-          ),
+        await refreshUsers(
+          0,
+          paginationModel.pageSize,
         );
       } catch (err: any) {
         setError(
@@ -249,8 +404,7 @@ export default function UserManagement() {
         setIsLoading(false);
       }
     }, [
-      fetchAllUsers,
-      filterUsers,
+      refreshUsers,
       paginationModel.pageSize,
     ]);
 
@@ -258,8 +412,8 @@ export default function UserManagement() {
   // Clear Search
   // ==================================================
 
-  const handleClear = useCallback(
-    async () => {
+  const handleClear =
+    useCallback(async () => {
       try {
         setIsLoading(true);
         setError(null);
@@ -268,13 +422,7 @@ export default function UserManagement() {
         setLastName('');
         setUsername('');
         setOrganization('');
-
-        setPaginationModel(
-          (prev) => ({
-            ...prev,
-            page: 0,
-          }),
-        );
+        setUserStatus('all');
 
         const allUsers =
           await fetchAllUsers();
@@ -289,6 +437,12 @@ export default function UserManagement() {
             paginationModel.pageSize,
           ),
         );
+
+        setPaginationModel({
+          page: 0,
+          pageSize:
+            paginationModel.pageSize,
+        });
       } catch (err: any) {
         setError(
           err?.response?.data?.message ||
@@ -298,12 +452,10 @@ export default function UserManagement() {
       } finally {
         setIsLoading(false);
       }
-    },
-    [
+    }, [
       fetchAllUsers,
       paginationModel.pageSize,
-    ],
-  );
+    ]);
 
   // ==================================================
   // Pagination
@@ -324,12 +476,6 @@ export default function UserManagement() {
           const filteredUsers =
             filterUsers(allUsers);
 
-          setPaginationModel(model);
-
-          setTotal(
-            filteredUsers.length,
-          );
-
           const start =
             model.page *
             model.pageSize;
@@ -337,6 +483,14 @@ export default function UserManagement() {
           const end =
             start +
             model.pageSize;
+
+          setPaginationModel(
+            model,
+          );
+
+          setTotal(
+            filteredUsers.length,
+          );
 
           setUsers(
             filteredUsers.slice(
@@ -364,10 +518,11 @@ export default function UserManagement() {
   // Open Create Modal
   // ==================================================
 
-  const handleOpenCreate = () => {
-    setSelectedUser(null);
-    setShowModal(true);
-  };
+  const handleOpenCreate =
+    () => {
+      setSelectedUser(null);
+      setShowModal(true);
+    };
 
   // ==================================================
   // Open Edit Modal
@@ -384,10 +539,11 @@ export default function UserManagement() {
   // Close Modal
   // ==================================================
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedUser(null);
-  };
+  const handleCloseModal =
+    () => {
+      setShowModal(false);
+      setSelectedUser(null);
+    };
 
   // ==================================================
   // Modal Success
@@ -405,6 +561,10 @@ export default function UserManagement() {
       department:
         savedUser.company?.department ??
         '-',
+
+      isLocked:
+        savedUser.isLocked ??
+        false,
     };
 
     setUsers((prev) => {
@@ -433,7 +593,6 @@ export default function UserManagement() {
       ];
     });
 
-    // اگر کاربر جدید است
     if (!selectedUser) {
       setTotal(
         (prev) => prev + 1,
@@ -447,83 +606,147 @@ export default function UserManagement() {
   // Delete User
   // ==================================================
 
-  const handleDelete = async (
-    user: User,
-  ) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const handleDelete =
+    async (
+      user: User,
+    ) => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      await axios.delete(
-        usermanagementApi.user.delete(
-          user.id,
-        ),
-      );
-
-      setUsers((prev) =>
-        prev.filter(
-          (item) =>
-            item.id !== user.id,
-        ),
-      );
-
-      setTotal(
-        (prev) =>
-          Math.max(
-            0,
-            prev - 1,
+        await axios.delete(
+          usermanagementApi.user.delete(
+            user.id,
           ),
-      );
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-          err?.message ||
-          'خطا در حذف کاربر',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        );
+
+        // حذف از localStorage
+        const lockedUserIds =
+          getLockedUserIds();
+
+        const updatedLockedUserIds =
+          lockedUserIds.filter(
+            (id) =>
+              id !== user.id,
+          );
+
+        saveLockedUserIds(
+          updatedLockedUserIds,
+        );
+
+        // حذف از جدول
+        setUsers((prev) =>
+          prev.filter(
+            (item) =>
+              item.id !== user.id,
+          ),
+        );
+
+        setTotal(
+          (prev) =>
+            Math.max(
+              0,
+              prev - 1,
+            ),
+        );
+      } catch (err: any) {
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            'خطا در حذف کاربر',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   // ==================================================
   // Lock User
   // ==================================================
 
-  const handleLockUser = (
-    user: User,
-  ) => {
-    setUsers((prev) =>
-      prev.map(
-        (item) =>
-          item.id === user.id
-            ? {
-                ...item,
-                isLocked: true,
-              }
-            : item,
-      ),
-    );
-  };
+  const handleLockUser =
+    async (
+      user: User,
+    ) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const lockedUserIds =
+          getLockedUserIds();
+
+        // جلوگیری از ثبت تکراری
+        if (
+          !lockedUserIds.includes(
+            user.id,
+          )
+        ) {
+          lockedUserIds.push(
+            user.id,
+          );
+        }
+
+        // ذخیره در localStorage
+        saveLockedUserIds(
+          lockedUserIds,
+        );
+
+        // به‌روزرسانی جدول
+        await refreshUsers(
+          paginationModel.page,
+          paginationModel.pageSize,
+        );
+      } catch (err: any) {
+        setError(
+          err?.message ||
+            'خطا در قفل کردن کاربر',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   // ==================================================
   // Unlock User
   // ==================================================
 
-  const handleUnlockUser = (
-    user: User,
-  ) => {
-    setUsers((prev) =>
-      prev.map(
-        (item) =>
-          item.id === user.id
-            ? {
-                ...item,
-                isLocked: false,
-              }
-            : item,
-      ),
-    );
-  };
+  const handleUnlockUser =
+    async (
+      user: User,
+    ) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const lockedUserIds =
+          getLockedUserIds();
+
+        // حذف کاربر از لیست قفل‌شده‌ها
+        const updatedLockedUserIds =
+          lockedUserIds.filter(
+            (id) =>
+              id !== user.id,
+          );
+
+        // ذخیره
+        saveLockedUserIds(
+          updatedLockedUserIds,
+        );
+
+        // به‌روزرسانی جدول
+        await refreshUsers(
+          paginationModel.page,
+          paginationModel.pageSize,
+        );
+      } catch (err: any) {
+        setError(
+          err?.message ||
+            'خطا در باز کردن قفل کاربر',
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   // ==================================================
   // Columns
@@ -564,6 +787,48 @@ export default function UserManagement() {
         row.company?.name ?? '-',
     },
 
+    // ==================================================
+    // Status
+    // ==================================================
+
+    {
+      field: 'status',
+      headerName: 'وضعیت',
+      width: 130,
+      sortable: false,
+      filterable: false,
+      align: 'center',
+      headerAlign: 'center',
+
+      renderCell: (
+        params,
+      ) => {
+        const isLocked =
+          params.row.isLocked ===
+          true;
+
+        return (
+          <Typography
+            sx={{
+              fontWeight: 600,
+
+              color: isLocked
+                ? 'error.main'
+                : 'success.main',
+            }}
+          >
+            {isLocked
+              ? 'قفل شده'
+              : 'فعال'}
+          </Typography>
+        );
+      },
+    },
+
+    // ==================================================
+    // Actions
+    // ==================================================
+
     {
       field: 'actions',
       headerName: 'عملیات',
@@ -577,8 +842,8 @@ export default function UserManagement() {
         params,
       ) => {
         const isLocked =
-          params.row.isLocked ??
-          false;
+          params.row.isLocked ===
+          true;
 
         return (
           <Box
@@ -661,37 +926,43 @@ export default function UserManagement() {
       }}
     >
       {/* ==================================================
+          Title
+          ================================================== */}
+
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent:
+            'flex-start',
+          gap: 1,
+          mb: 2,
+          direction: 'ltr',
+        }}
+      >
+        <PeopleAltIcon
+          sx={{
+            fontSize: 30,
+            color: '#212121',
+          }}
+        />
+
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            color: '#212121',
+            textAlign: 'right',
+          }}
+        >
+          مدیریت کاربران
+        </Typography>
+      </Box>
+
+      {/* ==================================================
           Search Panel
           ================================================== */}
 
-<Box
-  sx={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 1,
-    mb: 2,
-    direction: 'ltr',
-  }}
->
-  <PeopleAltIcon
-    sx={{
-      fontSize: 30,
-      color: '#212121',
-    }}
-  />
-
-  <Typography
-    variant="h5"
-    sx={{
-      fontWeight: 700,
-      color: '#212121',
-      textAlign: 'right',
-    }}
-  >
-    مدیریت کاربران
-  </Typography>
-</Box>      
       <Paper
         elevation={0}
         sx={{
@@ -901,15 +1172,52 @@ export default function UserManagement() {
               },
             }}
           />
+
+          {/* وضعیت کاربر */}
+
+          <FormControl
+            fullWidth
+            size="small"
+          >
+            <InputLabel>
+              وضعیت کاربر
+            </InputLabel>
+
+            <Select
+              value={userStatus}
+              label="وضعیت کاربر"
+              onChange={(e) =>
+                setUserStatus(
+                  e.target
+                    .value as UserStatus,
+                )
+              }
+            >
+              <MenuItem value="all">
+                همه کاربران
+              </MenuItem>
+
+              <MenuItem value="active">
+                کاربران فعال
+              </MenuItem>
+
+              <MenuItem value="locked">
+                کاربران قفل‌شده
+              </MenuItem>
+            </Select>
+          </FormControl>
         </Box>
 
-        {/* Buttons */}
+        {/* ==================================================
+            Buttons
+            ================================================== */}
 
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent:
+              'center',
             gap: 1.5,
             width: '100%',
           }}
@@ -928,7 +1236,8 @@ export default function UserManagement() {
             sx={{
               minWidth: 150,
               height: 40,
-              whiteSpace: 'nowrap',
+              whiteSpace:
+                'nowrap',
               backgroundColor:
                 '#2e7d32',
 
@@ -955,7 +1264,8 @@ export default function UserManagement() {
             sx={{
               minWidth: 100,
               height: 40,
-              whiteSpace: 'nowrap',
+              whiteSpace:
+                'nowrap',
               backgroundColor:
                 '#2e7d32',
 
@@ -972,7 +1282,9 @@ export default function UserManagement() {
 
           <Button
             variant="contained"
-            onClick={handleClear}
+            onClick={
+              handleClear
+            }
             startIcon={
               <ClearIcon />
             }
@@ -982,13 +1294,15 @@ export default function UserManagement() {
                 !firstName &&
                 !lastName &&
                 !username &&
-                !organization
+                !organization &&
+                userStatus === 'all'
               )
             }
             sx={{
               minWidth: 100,
               height: 40,
-              whiteSpace: 'nowrap',
+              whiteSpace:
+                'nowrap',
               backgroundColor:
                 '#2e7d32',
 
@@ -1011,7 +1325,8 @@ export default function UserManagement() {
         <Paper
           sx={{
             p: 2,
-            bgcolor: 'error.light',
+            bgcolor:
+              'error.light',
             color:
               'error.contrastText',
             borderRadius: 2,
@@ -1038,7 +1353,6 @@ export default function UserManagement() {
           handlePaginationChange
         }
         sx={{
-          // هدر آبی
           '& .MuiDataGrid-columnHeaders':
             {
               backgroundColor:
@@ -1055,7 +1369,8 @@ export default function UserManagement() {
           '& .MuiDataGrid-columnHeaderTitle':
             {
               color: '#fff',
-              fontWeight: 'bold',
+              fontWeight:
+                'bold',
             },
 
           '& .MuiDataGrid-sortIcon':
@@ -1068,18 +1383,17 @@ export default function UserManagement() {
               color: '#fff',
             },
 
-          // وسط‌چین کردن هدر
           '& .MuiDataGrid-columnHeaderTitleContainer':
             {
               justifyContent:
                 'center',
             },
 
-          // وسط‌چین کردن سلول‌ها
           '& .MuiDataGrid-cell':
             {
               display: 'flex',
-              alignItems: 'center',
+              alignItems:
+                'center',
             },
         }}
       />

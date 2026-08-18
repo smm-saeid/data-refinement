@@ -31,6 +31,14 @@ export type User = {
   password?: string;
   personnelCode?: string;
 
+  // زمان فعالیت
+  startDate?: string;
+  endDate?: string;
+
+  // اطلاعات کاری
+  workShift?: string;
+  organization?: string;
+
   age?: number;
   gender?: string;
   phone?: string;
@@ -61,6 +69,14 @@ export type UserForm = {
   confirmPassword: string;
 
   personnelCode: string;
+
+  // زمان فعالیت
+  startDate: string;
+  endDate: string;
+
+  // اطلاعات کاری
+  workShift: string;
+  organization: string;
 };
 
 // ==================================================

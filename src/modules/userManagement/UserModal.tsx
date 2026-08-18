@@ -8,16 +8,23 @@ import {
   DialogTitle,
   TextField,
   Box,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Tooltip,
 } from '@mui/material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import BusinessIcon from '@mui/icons-material/Business';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 import axios from 'axios';
 
 import type { User, UserForm } from './types';
 
-const API_URL =
-  'https://dummyjson.com/users';
+const API_URL = 'https://dummyjson.com/users';
 
 // ==================================================
 // Props
@@ -41,6 +48,10 @@ const initialForm: UserForm = {
   password: '',
   confirmPassword: '',
   personnelCode: '',
+  startDate: '',
+  endDate: '',
+  workShift: '',
+  organization: '',
 };
 
 // ==================================================
@@ -57,31 +68,31 @@ export default function UserModal({
   // Form
   // ==================================================
 
-  const [form, setForm] =
-    useState<UserForm>({
-      ...initialForm,
-    });
+  const [form, setForm] = useState<UserForm>({
+    ...initialForm,
+  });
 
   // ==================================================
   // Loading
   // ==================================================
 
-  const [isLoading, setIsLoading] =
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ==================================================
+  // Password Visibility
+  // ==================================================
+
+  const [showPassword, setShowPassword] =
     useState(false);
 
-  // ==================================================
-  // Changed
-  // ==================================================
-
-  const [hasChanged, setHasChanged] =
+  const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
 
   // ==================================================
   // Edit Mode
   // ==================================================
 
-  const isEditMode =
-    Boolean(user);
+  const isEditMode = Boolean(user);
 
   // ==================================================
   // Load User
@@ -90,32 +101,75 @@ export default function UserModal({
   useEffect(() => {
     if (!open) return;
 
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+
     if (user) {
       setForm({
-        firstName:
-          user.firstName ?? '',
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        username: user.username ?? '',
 
-        lastName:
-          user.lastName ?? '',
-
-        username:
-          user.username ?? '',
-
+        // رمز قبلی نمایش داده نمی‌شود
         password: '',
-
         confirmPassword: '',
 
-        personnelCode:
-          user.personnelCode ?? '',
+        personnelCode: user.personnelCode ?? '',
+
+        startDate: user.startDate ?? '',
+        endDate: user.endDate ?? '',
+
+        workShift: user.workShift ?? '',
+
+        organization:
+          user.organization ??
+          user.company?.name ??
+          '',
       });
     } else {
       setForm({
         ...initialForm,
       });
     }
-
-    setHasChanged(false);
   }, [user, open]);
+
+  // ==================================================
+  // Persian Validation
+  // ==================================================
+
+  const onlyPersian = (value: string) => {
+    return value.replace(/[^آ-ی\s]/g, '');
+  };
+
+  // ==================================================
+  // English Validation
+  // ==================================================
+
+  const onlyEnglish = (value: string) => {
+    return value.replace(/[^a-zA-Z]/g, '');
+  };
+
+  // ==================================================
+  // Password Characters
+  // ==================================================
+
+  const onlyEnglishPassword = (value: string) => {
+    return value.replace(
+      /[^a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?`~]/g,
+      '',
+    );
+  };
+
+  // ==================================================
+  // Personnel Code
+  // فقط عدد و حداکثر ۹ رقم
+  // ==================================================
+
+  const onlyNumbers = (value: string) => {
+    return value
+      .replace(/[^0-9]/g, '')
+      .slice(0, 9);
+  };
 
   // ==================================================
   // Change Form
@@ -129,8 +183,6 @@ export default function UserModal({
       ...prev,
       [field]: value,
     }));
-
-    setHasChanged(true);
   };
 
   // ==================================================
@@ -142,7 +194,19 @@ export default function UserModal({
       ...initialForm,
     });
 
-    setHasChanged(true);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  // ==================================================
+  // Clear Organization
+  // ==================================================
+
+  const handleClearOrganization = () => {
+    handleChange(
+      'organization',
+      '',
+    );
   };
 
   // ==================================================
@@ -156,10 +220,116 @@ export default function UserModal({
       ...initialForm,
     });
 
-    setHasChanged(false);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
 
     onClose();
   };
+
+  // ==================================================
+  // Password Validation
+  // ==================================================
+
+  const passwordMinLength =
+    form.password.length >= 8;
+
+  const passwordHasUppercase =
+    /[A-Z]/.test(form.password);
+
+  const passwordHasLowercase =
+    /[a-z]/.test(form.password);
+
+  const passwordHasNumber =
+    /[0-9]/.test(form.password);
+
+  const passwordHasSymbol =
+    /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(
+      form.password,
+    );
+
+  const passwordStrong =
+    passwordMinLength &&
+    passwordHasUppercase &&
+    passwordHasLowercase &&
+    passwordHasNumber &&
+    passwordHasSymbol;
+
+  // ==================================================
+  // Password Mismatch
+  // ==================================================
+
+  const passwordMismatch =
+    form.confirmPassword !== '' &&
+    form.password !== form.confirmPassword;
+
+  // ==================================================
+  // Personnel Code Validation
+  // ==================================================
+
+  const personnelCodeInvalid =
+    form.personnelCode.length !== 9;
+
+  // ==================================================
+  // Date Validation
+  // ==================================================
+
+  const dateInvalid =
+    form.startDate !== '' &&
+    form.endDate !== '' &&
+    form.endDate < form.startDate;
+
+  // ==================================================
+  // Required Fields
+  // ==================================================
+
+  const requiredFieldsEmpty =
+    !form.firstName.trim() ||
+    !form.lastName.trim() ||
+    !form.username.trim() ||
+    !form.personnelCode.trim() ||
+    !form.startDate.trim() ||
+    !form.endDate.trim() ||
+    !form.workShift.trim() ||
+    !form.organization.trim();
+
+  // ==================================================
+  // Password Invalid
+  // ==================================================
+
+  const passwordInvalid = isEditMode
+    ? (
+        // اگر رمز جدید وارد شده باشد
+        // باید قوی باشد
+        (form.password !== '' &&
+          !passwordStrong) ||
+
+        // تکرار رمز بدون رمز اصلی
+        (form.password === '' &&
+          form.confirmPassword !== '') ||
+
+        // رمز بدون تکرار
+        (form.password !== '' &&
+          form.confirmPassword === '') ||
+
+        // عدم تطابق
+        passwordMismatch
+      )
+    : (
+        // ایجاد کاربر
+        !passwordStrong ||
+        !form.confirmPassword.trim() ||
+        passwordMismatch
+      );
+
+  // ==================================================
+  // Final Validation
+  // ==================================================
+
+  const isFormInvalid =
+    requiredFieldsEmpty ||
+    personnelCodeInvalid ||
+    passwordInvalid ||
+    dateInvalid;
 
   // ==================================================
   // Save
@@ -168,29 +338,7 @@ export default function UserModal({
   const handleSave = async (
     createNew = false,
   ) => {
-    // ==================================================
-    // Required Fields
-    // ==================================================
-
-    if (
-      !form.firstName.trim() ||
-      !form.lastName.trim() ||
-      !form.username.trim() ||
-      !form.password ||
-      !form.confirmPassword ||
-      !form.personnelCode.trim()
-    ) {
-      return;
-    }
-
-    // ==================================================
-    // Password Validation
-    // ==================================================
-
-    if (
-      form.password !==
-      form.confirmPassword
-    ) {
+    if (isFormInvalid) {
       return;
     }
 
@@ -201,7 +349,7 @@ export default function UserModal({
       // Payload
       // ==================================================
 
-      const payload = {
+      const payload: Record<string, unknown> = {
         firstName:
           form.firstName.trim(),
 
@@ -211,12 +359,34 @@ export default function UserModal({
         username:
           form.username.trim(),
 
-        password:
-          form.password,
-
         personnelCode:
           form.personnelCode.trim(),
+
+        startDate:
+          form.startDate,
+
+        endDate:
+          form.endDate,
+
+        workShift:
+          form.workShift,
+
+        organization:
+          form.organization.trim(),
       };
+
+      // ==================================================
+      // Password
+      // ==================================================
+
+      if (form.password.trim()) {
+        payload.password =
+          form.password;
+      }
+
+      // ==================================================
+      // API
+      // ==================================================
 
       let response;
 
@@ -224,10 +394,7 @@ export default function UserModal({
       // Edit
       // ==================================================
 
-      if (
-        isEditMode &&
-        user
-      ) {
+      if (isEditMode && user) {
         response =
           await axios.put<User>(
             `${API_URL}/${user.id}`,
@@ -251,8 +418,7 @@ export default function UserModal({
       // Response
       // ==================================================
 
-      const savedUser: User =
-        response.data;
+      const savedUser = response.data;
 
       // ==================================================
       // Format User
@@ -277,18 +443,39 @@ export default function UserModal({
           savedUser.personnelCode ??
           form.personnelCode,
 
+        startDate:
+          savedUser.startDate ??
+          form.startDate,
+
+        endDate:
+          savedUser.endDate ??
+          form.endDate,
+
+        workShift:
+          savedUser.workShift ??
+          form.workShift,
+
+        organization:
+          savedUser.organization ??
+          form.organization,
+
         fullName:
-          `${savedUser.firstName ?? form.firstName} ${
-            savedUser.lastName ?? form.lastName
+          `${
+            savedUser.firstName ??
+            form.firstName
+          } ${
+            savedUser.lastName ??
+            form.lastName
           }`.trim(),
 
         department:
-          savedUser.company
-            ?.department ?? '-',
+          savedUser.company?.department ??
+          savedUser.department ??
+          '-',
       };
 
       // ==================================================
-      // Send to Parent
+      // Send To Parent
       // ==================================================
 
       onSuccess(formattedUser);
@@ -305,7 +492,8 @@ export default function UserModal({
           ...initialForm,
         });
 
-        setHasChanged(false);
+        setShowPassword(false);
+        setShowConfirmPassword(false);
 
         return;
       }
@@ -318,14 +506,15 @@ export default function UserModal({
         ...initialForm,
       });
 
-      setHasChanged(false);
+      setShowPassword(false);
+      setShowConfirmPassword(false);
 
       onClose();
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         console.error(
           'Save Error:',
-          error.response?.data ||
+          error.response?.data ??
             error.message,
         );
       } else {
@@ -340,78 +529,57 @@ export default function UserModal({
   };
 
   // ==================================================
-  // Delete & Close
+  // Delete User
   // ==================================================
 
-  const handleDeleteAndClose =
-    async () => {
-      if (!user) return;
+  const handleDeleteAndClose = async () => {
+    if (!user) return;
 
-      try {
-        setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-        await axios.delete(
-          `${API_URL}/${user.id}`,
+      await axios.delete(
+        `${API_URL}/${user.id}`,
+      );
+
+      setForm({
+        ...initialForm,
+      });
+
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+
+      onClose();
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          'Delete Error:',
+          error.response?.data ??
+            error.message,
         );
-
-        setForm({
-          ...initialForm,
-        });
-
-        setHasChanged(false);
-
-        onClose();
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          console.error(
-            'Delete Error:',
-            error.response?.data ||
-              error.message,
-          );
-        } else {
-          console.error(
-            'Delete Error:',
-            error,
-          );
-        }
-      } finally {
-        setIsLoading(false);
+      } else {
+        console.error(
+          'Delete Error:',
+          error,
+        );
       }
-    };
-
-  // ==================================================
-  // Password Mismatch
-  // ==================================================
-
-  const passwordMismatch =
-    form.confirmPassword !== '' &&
-    form.password !==
-      form.confirmPassword;
-
-  // ==================================================
-  // Required Fields
-  // ==================================================
-
-  const requiredFieldsEmpty =
-    !form.firstName.trim() ||
-    !form.lastName.trim() ||
-    !form.username.trim() ||
-    !form.password ||
-    !form.confirmPassword ||
-    !form.personnelCode.trim();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // ==================================================
   // Render
   // ==================================================
 
   return (
-   <Dialog
-  open={open}
-  onClose={handleClose}
-  fullWidth
-  maxWidth="md"
-  dir="rtl"
->
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="md"
+      dir="rtl"
+    >
       {/* ==================================================
           Title
           ================================================== */}
@@ -420,8 +588,10 @@ export default function UserModal({
         sx={{
           fontWeight: 700,
           textAlign: 'left',
+
           display: 'flex',
           alignItems: 'center',
+
           gap: 1,
         }}
       >
@@ -468,9 +638,16 @@ export default function UserModal({
             onChange={(e) =>
               handleChange(
                 'firstName',
-                e.target.value,
+                onlyPersian(
+                  e.target.value,
+                ),
               )
             }
+            slotProps={{
+              htmlInput: {
+                dir: 'rtl',
+              },
+            }}
           />
 
           {/* ==================================================
@@ -485,9 +662,16 @@ export default function UserModal({
             onChange={(e) =>
               handleChange(
                 'lastName',
-                e.target.value,
+                onlyPersian(
+                  e.target.value,
+                ),
               )
             }
+            slotProps={{
+              htmlInput: {
+                dir: 'rtl',
+              },
+            }}
           />
 
           {/* ==================================================
@@ -502,9 +686,16 @@ export default function UserModal({
             onChange={(e) =>
               handleChange(
                 'username',
-                e.target.value,
+                onlyEnglish(
+                  e.target.value,
+                ),
               )
             }
+            slotProps={{
+              htmlInput: {
+                dir: 'ltr',
+              },
+            }}
           />
 
           {/* ==================================================
@@ -514,15 +705,63 @@ export default function UserModal({
           <TextField
             fullWidth
             size="small"
-            type="password"
+            type={
+              showPassword
+                ? 'text'
+                : 'password'
+            }
             label="کلمه عبور"
             value={form.password}
+            autoComplete="new-password"
             onChange={(e) =>
               handleChange(
                 'password',
-                e.target.value,
+                onlyEnglishPassword(
+                  e.target.value,
+                ),
               )
             }
+            error={
+              form.password !== '' &&
+              !passwordStrong
+            }
+            helperText={
+              form.password !== '' &&
+              !passwordStrong
+                ? 'حداقل ۸ کاراکتر، شامل حرف بزرگ، حرف کوچک، عدد و نماد باشد'
+                : ''
+            }
+            slotProps={{
+              htmlInput: {
+                dir: 'ltr',
+              },
+
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() =>
+                        setShowPassword(
+                          (prev) => !prev,
+                        )
+                      }
+                      edge="end"
+                      aria-label={
+                        showPassword
+                          ? 'مخفی کردن رمز'
+                          : 'نمایش رمز'
+                      }
+                    >
+                      {showPassword ? (
+                        <VisibilityOffIcon />
+                      ) : (
+                        <VisibilityIcon />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
 
           {/* ==================================================
@@ -532,23 +771,63 @@ export default function UserModal({
           <TextField
             fullWidth
             size="small"
-            type="password"
+            type={
+              showConfirmPassword
+                ? 'text'
+                : 'password'
+            }
             label="تکرار کلمه عبور"
             value={
               form.confirmPassword
             }
+            autoComplete="new-password"
             onChange={(e) =>
               handleChange(
                 'confirmPassword',
-                e.target.value,
+                onlyEnglishPassword(
+                  e.target.value,
+                ),
               )
             }
-            error={passwordMismatch}
+            error={
+              passwordMismatch
+            }
             helperText={
               passwordMismatch
                 ? 'کلمه عبور و تکرار آن یکسان نیستند'
                 : ''
             }
+            slotProps={{
+              htmlInput: {
+                dir: 'ltr',
+              },
+
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() =>
+                        setShowConfirmPassword(
+                          (prev) => !prev,
+                        )
+                      }
+                      edge="end"
+                      aria-label={
+                        showConfirmPassword
+                          ? 'مخفی کردن رمز'
+                          : 'نمایش رمز'
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <VisibilityOffIcon />
+                      ) : (
+                        <VisibilityIcon />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
 
           {/* ==================================================
@@ -562,13 +841,230 @@ export default function UserModal({
             value={
               form.personnelCode
             }
+            autoComplete="off"
             onChange={(e) =>
               handleChange(
                 'personnelCode',
+                onlyNumbers(
+                  e.target.value,
+                ),
+              )
+            }
+            error={
+              form.personnelCode !== '' &&
+              personnelCodeInvalid
+            }
+            helperText={
+              form.personnelCode !== '' &&
+              personnelCodeInvalid
+                ? 'کد کارگزینی باید دقیقاً ۹ رقم باشد'
+                : ''
+            }
+            slotProps={{
+              htmlInput: {
+                dir: 'ltr',
+                inputMode: 'numeric',
+                maxLength: 9,
+              },
+            }}
+          />
+
+          {/* ==================================================
+              آغاز زمان فعالیت
+              ================================================== */}
+
+          <TextField
+            fullWidth
+            size="small"
+            label="آغاز زمان فعالیت"
+            type="date"
+            value={
+              form.startDate
+            }
+            onChange={(e) =>
+              handleChange(
+                'startDate',
                 e.target.value,
               )
             }
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+
+              htmlInput: {
+                dir: 'ltr',
+              },
+            }}
           />
+
+          {/* ==================================================
+              اتمام زمان فعالیت
+              ================================================== */}
+
+          <TextField
+            fullWidth
+            size="small"
+            label="اتمام زمان فعالیت"
+            type="date"
+            value={
+              form.endDate
+            }
+            onChange={(e) =>
+              handleChange(
+                'endDate',
+                e.target.value,
+              )
+            }
+            error={dateInvalid}
+            helperText={
+              dateInvalid
+                ? 'تاریخ اتمام نباید قبل از تاریخ آغاز باشد'
+                : ''
+            }
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
+
+              htmlInput: {
+                dir: 'ltr',
+              },
+            }}
+          />
+
+          {/* ==================================================
+              شیفت کاری
+              ================================================== */}
+
+          <TextField
+            fullWidth
+            size="small"
+            select
+            label="شیفت کاری"
+            value={
+              form.workShift
+            }
+            onChange={(e) =>
+              handleChange(
+                'workShift',
+                e.target.value,
+              )
+            }
+          >
+            <MenuItem value="صبح">
+              صبح
+            </MenuItem>
+
+            <MenuItem value="عصر">
+              عصر
+            </MenuItem>
+
+            <MenuItem value="شب">
+              شب
+            </MenuItem>
+
+            <MenuItem value="اداری">
+              اداری
+            </MenuItem>
+          </TextField>
+
+          {/* ==================================================
+              سازمان
+              ================================================== */}
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              width: '100%',
+            }}
+          >
+            {/* فیلد سازمان */}
+
+            <TextField
+              fullWidth
+              size="small"
+              label="سازمان"
+              value={
+                form.organization
+              }
+              onChange={(e) =>
+                handleChange(
+                  'organization',
+                  e.target.value,
+                )
+              }
+              slotProps={{
+                htmlInput: {
+                  dir: 'rtl',
+                },
+              }}
+            />
+
+            {/* ==================================================
+                آیکن سازمان
+                ================================================== */}
+
+            <Tooltip title="سازمان">
+              <IconButton
+                size="small"
+                sx={{
+                  width: 32,
+                  height: 32,
+                  flexShrink: 0,
+
+                  color:
+                    'primary.main',
+                }}
+              >
+                <BusinessIcon
+                  fontSize="small"
+                />
+              </IconButton>
+            </Tooltip>
+
+            {/* ==================================================
+                سطل زباله قرمز
+                ================================================== */}
+
+            <Tooltip title="پاک کردن سازمان">
+              <span>
+                <IconButton
+                  size="small"
+                  onClick={
+                    handleClearOrganization
+                  }
+                  disabled={
+                    isLoading ||
+                    !form.organization
+                  }
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    flexShrink: 0,
+
+                    color: '#d32f2f',
+
+                    '&:hover': {
+                      backgroundColor:
+                        'rgba(211, 47, 47, 0.10)',
+                    },
+
+                    '&.Mui-disabled': {
+                      color:
+                        'rgba(211, 47, 47, 0.35)',
+                    },
+                  }}
+                >
+                  <DeleteOutlineIcon
+                    fontSize="small"
+                  />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
         </Box>
       </DialogContent>
 
@@ -665,11 +1161,12 @@ export default function UserModal({
                 }
                 disabled={
                   isLoading ||
-                  requiredFieldsEmpty ||
-                  passwordMismatch
+                  isFormInvalid
                 }
               >
-                ذخیره و جدید
+                {isLoading
+                  ? 'در حال ذخیره...'
+                  : 'ذخیره و جدید'}
               </Button>
             )}
 
@@ -683,8 +1180,7 @@ export default function UserModal({
               }
               disabled={
                 isLoading ||
-                requiredFieldsEmpty ||
-                passwordMismatch
+                isFormInvalid
               }
             >
               {isLoading
