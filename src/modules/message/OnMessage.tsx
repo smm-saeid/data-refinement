@@ -18,6 +18,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Popover,
 } from '@mui/material';
 
 import type { SelectChangeEvent } from '@mui/material';
@@ -48,48 +49,94 @@ import LinkIcon from '@mui/icons-material/Link';
 import FormatColorTextIcon from '@mui/icons-material/FormatColorText';
 import HighlightIcon from '@mui/icons-material/Highlight';
 
-import {
-  useEditor,
-  EditorContent,
-} from '@tiptap/react';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import RemoveIcon from '@mui/icons-material/Remove';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ViewWeekIcon from '@mui/icons-material/ViewWeek';
+import ViewHeadlineIcon from '@mui/icons-material/ViewHeadline';
+
+import { EditorContent, useEditor } from '@tiptap/react';
 
 import StarterKit from '@tiptap/starter-kit';
+
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
-import { TextStyle } from '@tiptap/extension-text-style';import Highlight from '@tiptap/extension-highlight';
+import { TextStyle } from '@tiptap/extension-text-style';
+import Highlight from '@tiptap/extension-highlight';
 import Link from '@tiptap/extension-link';
+
+import { Table } from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
 
 import { Extension } from '@tiptap/core';
 
-
-// =====================================================
-// Props
-// =====================================================
-
-interface OnMessageProps {
-  onClose: () => void;
-}
+import './OnMessage.css';
 
 
-// =====================================================
-// User
-// =====================================================
+// =========================================================
+// Types
+// =========================================================
 
-interface User {
+type UserCompany = {
+  name?: string;
+  department?: string;
+  title?: string;
+  address?: {
+    address?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+};
+
+type User = {
   id: number;
   firstName: string;
   lastName: string;
-  email: string;
-}
+  username: string;
 
-interface UsersResponse {
+  password?: string;
+  personnelCode?: string;
+
+  startDate?: string;
+  endDate?: string;
+
+  workShift?: string;
+  organization?: string;
+
+  age?: number;
+  gender?: string;
+  phone?: string;
+  email?: string;
+  birthDate?: string;
+  image?: string;
+
+  company?: UserCompany;
+
+  fullName?: string;
+  department?: string;
+
+  isLocked?: boolean;
+};
+
+type UsersResponse = {
   users: User[];
-}
+  total: number;
+  skip: number;
+  limit: number;
+};
+
+type OnMessageProps = {
+  onClose: () => void;
+};
 
 
-// =====================================================
-// Font Family Extension
-// =====================================================
+// =========================================================
+// Font Family + Font Size
+// =========================================================
 
 const FontFamily = Extension.create({
   name: 'fontFamily',
@@ -133,74 +180,61 @@ const FontFamily = Extension.create({
               };
             },
           },
+
+          color: {
+            default: null,
+
+            parseHTML: (element) =>
+              element.style.color || null,
+
+            renderHTML: (attributes) => {
+              if (!attributes.color) {
+                return {};
+              }
+
+              return {
+                style: `color: ${attributes.color}`,
+              };
+            },
+          },
         },
       },
     ];
   },
-
-  addCommands() {
-    return {
-      setFontFamily:
-        (fontFamily: string) =>
-        ({ commands }: any) => {
-          return commands.setMark('textStyle', {
-            fontFamily,
-          });
-        },
-
-      unsetFontFamily:
-        () =>
-        ({ commands }: any) => {
-          return commands.setMark('textStyle', {
-            fontFamily: null,
-          });
-        },
-
-      setFontSize:
-        (fontSize: string) =>
-        ({ commands }: any) => {
-          return commands.setMark('textStyle', {
-            fontSize,
-          });
-        },
-
-      unsetFontSize:
-        () =>
-        ({ commands }: any) => {
-          return commands.setMark('textStyle', {
-            fontSize: null,
-          });
-        },
-    };
-  },
 });
 
 
-// =====================================================
-// محدودیت فایل
-// =====================================================
+// =========================================================
+// File
+// =========================================================
 
-// حداکثر 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-// فقط ZIP و RAR
 const ALLOWED_FILE_EXTENSIONS = [
   '.zip',
   '.rar',
 ];
 
 
-// =====================================================
+// =========================================================
+// Table Picker Size
+// =========================================================
+
+const MAX_TABLE_ROWS = 8;
+const MAX_TABLE_COLS = 8;
+
+
+// =========================================================
 // Component
-// =====================================================
+// =========================================================
 
 const OnMessage = ({
   onClose,
 }: OnMessageProps) => {
 
-  // =====================================================
-  // کاربران
-  // =====================================================
+  // =======================================================
+  // Users
+  // =======================================================
 
   const [users, setUsers] =
     useState<User[]>([]);
@@ -212,9 +246,9 @@ const OnMessage = ({
     useState(false);
 
 
-  // =====================================================
-  // پیام
-  // =====================================================
+  // =======================================================
+  // Message
+  // =======================================================
 
   const [title, setTitle] =
     useState('');
@@ -223,9 +257,9 @@ const OnMessage = ({
     useState('');
 
 
-  // =====================================================
-  // فایل
-  // =====================================================
+  // =======================================================
+  // File
+  // =======================================================
 
   const [selectedFile, setSelectedFile] =
     useState<File | null>(null);
@@ -240,9 +274,29 @@ const OnMessage = ({
     useState('');
 
 
-  // =====================================================
+  // =======================================================
+  // Table Picker
+  // =======================================================
+
+  const [
+    tablePickerAnchor,
+    setTablePickerAnchor,
+  ] = useState<HTMLElement | null>(null);
+
+  const [
+    selectedTableRows,
+    setSelectedTableRows,
+  ] = useState(0);
+
+  const [
+    selectedTableCols,
+    setSelectedTableCols,
+  ] = useState(0);
+
+
+  // =======================================================
   // Editor
-  // =====================================================
+  // =======================================================
 
   const editor = useEditor({
 
@@ -258,6 +312,8 @@ const OnMessage = ({
         types: [
           'heading',
           'paragraph',
+          'tableCell',
+          'tableHeader',
         ],
       }),
 
@@ -272,6 +328,20 @@ const OnMessage = ({
       }),
 
       FontFamily,
+
+      Table.configure({
+        resizable: true,
+
+        HTMLAttributes: {
+          class: 'word-table',
+        },
+      }),
+
+      TableRow,
+
+      TableHeader,
+
+      TableCell,
     ],
 
     content: '',
@@ -282,19 +352,19 @@ const OnMessage = ({
       },
     },
 
-    onUpdate: ({
-      editor,
-    }) => {
+    onUpdate: ({ editor }) => {
+
       setText(
         editor.getHTML(),
       );
+
     },
   });
 
 
-  // =====================================================
-  // دریافت کاربران
-  // =====================================================
+  // =======================================================
+  // Get Users
+  // =======================================================
 
   useEffect(() => {
 
@@ -318,9 +388,7 @@ const OnMessage = ({
         const data: UsersResponse =
           await response.json();
 
-        setUsers(
-          data.users,
-        );
+        setUsers(data.users);
 
       } catch (error) {
 
@@ -341,9 +409,9 @@ const OnMessage = ({
   }, []);
 
 
-  // =====================================================
-  // بررسی فایل
-  // =====================================================
+  // =======================================================
+  // File Validation
+  // =======================================================
 
   const isAllowedFile = (
     file: File,
@@ -359,9 +427,9 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // باز کردن Modal فایل
-  // =====================================================
+  // =======================================================
+  // Open File Modal
+  // =======================================================
 
   const handleOpenFileModal = () => {
 
@@ -371,11 +439,15 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // بستن Modal فایل
-  // =====================================================
+  // =======================================================
+  // Close File Modal
+  // =======================================================
 
   const handleCloseFileModal = () => {
+
+    if (uploading) {
+      return;
+    }
 
     setFileError('');
 
@@ -383,26 +455,22 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // انتخاب فایل
-  // =====================================================
+  // =======================================================
+  // File Change
+  // =======================================================
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
 
     const file =
-      event.target.files?.[0] ??
-      null;
+      event.target.files?.[0] ?? null;
 
     if (!file) {
       return;
     }
 
     setFileError('');
-
-
-    // بررسی فرمت
 
     if (!isAllowedFile(file)) {
 
@@ -417,13 +485,7 @@ const OnMessage = ({
       return;
     }
 
-
-    // بررسی حجم
-
-    if (
-      file.size >
-      MAX_FILE_SIZE
-    ) {
+    if (file.size > MAX_FILE_SIZE) {
 
       setFileError(
         'حجم فایل نباید بیشتر از 10 مگابایت باشد.',
@@ -436,14 +498,13 @@ const OnMessage = ({
       return;
     }
 
-
     setSelectedFile(file);
   };
 
 
-  // =====================================================
-  // آپلود فایل
-  // =====================================================
+  // =======================================================
+  // Upload
+  // =======================================================
 
   const handleUpload = async () => {
 
@@ -458,12 +519,7 @@ const OnMessage = ({
       return;
     }
 
-
-    if (
-      !isAllowedFile(
-        selectedFile,
-      )
-    ) {
+    if (!isAllowedFile(selectedFile)) {
 
       setFileError(
         'فقط فایل‌های ZIP و RAR مجاز هستند.',
@@ -472,11 +528,7 @@ const OnMessage = ({
       return;
     }
 
-
-    if (
-      selectedFile.size >
-      MAX_FILE_SIZE
-    ) {
+    if (selectedFile.size > MAX_FILE_SIZE) {
 
       setFileError(
         'حجم فایل نباید بیشتر از 10 مگابایت باشد.',
@@ -485,14 +537,11 @@ const OnMessage = ({
       return;
     }
 
-
     try {
 
       setUploading(true);
 
-      // شبیه‌سازی آپلود
-
-      await new Promise(
+      await new Promise<void>(
         (resolve) =>
           setTimeout(
             resolve,
@@ -526,9 +575,9 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // حذف گیرنده با دابل کلیک
-  // =====================================================
+  // =======================================================
+  // Remove Recipient
+  // =======================================================
 
   const handleRemoveRecipient = (
     userId: number,
@@ -544,9 +593,9 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // انتخاب فونت
-  // =====================================================
+  // =======================================================
+  // Font Family
+  // =======================================================
 
   const handleFontFamily = (
     event: SelectChangeEvent<string>,
@@ -556,25 +605,23 @@ const OnMessage = ({
       return;
     }
 
-    const font =
-      event.target.value;
-
     editor
       .chain()
       .focus()
       .setMark(
         'textStyle',
         {
-          fontFamily: font,
+          fontFamily:
+            event.target.value,
         },
       )
       .run();
   };
 
 
-  // =====================================================
-  // انتخاب اندازه فونت
-  // =====================================================
+  // =======================================================
+  // Font Size
+  // =======================================================
 
   const handleFontSize = (
     event: SelectChangeEvent<string>,
@@ -584,25 +631,23 @@ const OnMessage = ({
       return;
     }
 
-    const size =
-      event.target.value;
-
     editor
       .chain()
       .focus()
       .setMark(
         'textStyle',
         {
-          fontSize: size,
+          fontSize:
+            event.target.value,
         },
       )
       .run();
   };
 
 
-  // =====================================================
-  // لینک
-  // =====================================================
+  // =======================================================
+  // Link
+  // =======================================================
 
   const handleSetLink = () => {
 
@@ -618,8 +663,7 @@ const OnMessage = ({
     const url =
       window.prompt(
         'آدرس لینک را وارد کنید:',
-        previousUrl ||
-          'https://',
+        previousUrl || 'https://',
       );
 
     if (url === null) {
@@ -647,9 +691,9 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // رنگ متن
-  // =====================================================
+  // =======================================================
+  // Text Color
+  // =======================================================
 
   const handleTextColor = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -673,9 +717,9 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // هایلایت
-  // =====================================================
+  // =======================================================
+  // Highlight
+  // =======================================================
 
   const handleHighlight = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -696,19 +740,208 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // ارسال پیام
-  // =====================================================
+  // =======================================================
+  // Table State
+  // =======================================================
+
+  const isInsideTable =
+    editor?.isActive('table') ?? false;
+
+
+  // =======================================================
+  // Open Table Picker
+  // =======================================================
+
+  const handleOpenTablePicker = (
+    event: React.MouseEvent<HTMLElement>,
+  ) => {
+
+    setSelectedTableRows(0);
+
+    setSelectedTableCols(0);
+
+    setTablePickerAnchor(event.currentTarget);
+  };
+
+
+  // =======================================================
+  // Close Table Picker
+  // =======================================================
+
+  const handleCloseTablePicker = () => {
+
+    setTablePickerAnchor(null);
+
+    setSelectedTableRows(0);
+
+    setSelectedTableCols(0);
+  };
+
+
+  // =======================================================
+  // Hover Table Cell
+  // =======================================================
+
+  const handleTableCellHover = (
+    row: number,
+    col: number,
+  ) => {
+
+    setSelectedTableRows(row);
+
+    setSelectedTableCols(col);
+  };
+
+
+  // =======================================================
+  // Create Selected Table
+  // =======================================================
+
+  const handleCreateSelectedTable = (
+    rows: number,
+    cols: number,
+  ) => {
+
+    if (!editor) {
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .insertTable({
+        rows,
+        cols,
+        withHeaderRow: true,
+      })
+      .run();
+
+    setText(
+      editor.getHTML(),
+    );
+
+    handleCloseTablePicker();
+  };
+
+
+  // =======================================================
+  // Add Row
+  // =======================================================
+
+  const handleAddRow = () => {
+
+    if (!editor || !isInsideTable) {
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .addRowAfter()
+      .run();
+  };
+
+
+  // =======================================================
+  // Add Column
+  // =======================================================
+
+  const handleAddColumn = () => {
+
+    if (!editor || !isInsideTable) {
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .addColumnAfter()
+      .run();
+  };
+
+
+  // =======================================================
+  // Delete Row
+  // =======================================================
+
+  const handleDeleteRow = () => {
+
+    if (!editor || !isInsideTable) {
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .deleteRow()
+      .run();
+  };
+
+
+  // =======================================================
+  // Delete Column
+  // =======================================================
+
+  const handleDeleteColumn = () => {
+
+    if (!editor || !isInsideTable) {
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .deleteColumn()
+      .run();
+  };
+
+
+  // =======================================================
+  // Delete Table
+  // =======================================================
+
+  const handleDeleteTable = () => {
+
+    if (!editor || !isInsideTable) {
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .deleteTable()
+      .run();
+  };
+
+
+  // =======================================================
+  // Send
+  // =======================================================
 
   const handleSend = () => {
 
-    if (
-      selectedUsers.length ===
-      0
-    ) {
+    if (selectedUsers.length === 0) {
 
-      console.log(
+      alert(
         'لطفاً حداقل یک گیرنده انتخاب کنید.',
+      );
+
+      return;
+    }
+
+    if (!title.trim()) {
+
+      alert(
+        'لطفاً عنوان پیام را وارد کنید.',
+      );
+
+      return;
+    }
+
+    if (!text.trim()) {
+
+      alert(
+        'لطفاً متن پیام را وارد کنید.',
       );
 
       return;
@@ -738,9 +971,9 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // حجم فایل
-  // =====================================================
+  // =======================================================
+  // File Size
+  // =======================================================
 
   const getFileSizeInMB = (
     file: File,
@@ -753,24 +986,25 @@ const OnMessage = ({
   };
 
 
-  // =====================================================
-  // Editor آماده نیست
-  // =====================================================
+  // =======================================================
+  // Editor Loading
+  // =======================================================
 
   if (!editor) {
     return null;
   }
 
 
-  // =====================================================
+  // =======================================================
   // UI
-  // =====================================================
+  // =======================================================
 
   return (
-    <Box sx={{ p: 1 }}>
+
+    <Box className="on-message">
 
       {/* ================================================= */}
-      {/* عنوان پیام */}
+      {/* TITLE */}
       {/* ================================================= */}
 
       <TextField
@@ -782,51 +1016,41 @@ const OnMessage = ({
             event.target.value,
           )
         }
+        fullWidth
         sx={{
           mb: 2,
-          width: '50%',
         }}
       />
 
 
       {/* ================================================= */}
-      {/* ویرایشگر متن */}
+      {/* EDITOR */}
       {/* ================================================= */}
 
-      <Box
-        sx={{
-          mb: 2,
-          border: '1px solid',
-          borderColor:
-            'divider',
-          borderRadius: 1,
-          overflow: 'hidden',
-        }}
-      >
+      <Box className="on-message-editor">
 
-        {/* Toolbar */}
+        <Box className="editor-title">
 
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems:
-              'center',
-            flexWrap:
-              'wrap',
-            gap: 0.5,
-            p: 1,
-            backgroundColor:
-              'background.default',
-            borderBottom:
-              '1px solid',
-            borderColor:
-              'divider',
-          }}
-        >
+          <Typography
+            variant="subtitle1"
+            fontWeight={600}
+          >
+            متن پیام
+          </Typography>
+
+        </Box>
+
+
+        {/* ================================================= */}
+        {/* TOOLBAR */}
+        {/* ================================================= */}
+
+        <Box className="editor-toolbar">
 
           {/* Bold */}
 
           <Tooltip title="ضخیم">
+
             <IconButton
               size="small"
               onClick={() =>
@@ -839,12 +1063,14 @@ const OnMessage = ({
             >
               <FormatBoldIcon />
             </IconButton>
+
           </Tooltip>
 
 
           {/* Italic */}
 
           <Tooltip title="کج">
+
             <IconButton
               size="small"
               onClick={() =>
@@ -857,12 +1083,14 @@ const OnMessage = ({
             >
               <FormatItalicIcon />
             </IconButton>
+
           </Tooltip>
 
 
           {/* Underline */}
 
           <Tooltip title="زیرخط">
+
             <IconButton
               size="small"
               onClick={() =>
@@ -875,128 +1103,70 @@ const OnMessage = ({
             >
               <FormatUnderlinedIcon />
             </IconButton>
+
           </Tooltip>
 
 
           <Divider
             orientation="vertical"
             flexItem
-            sx={{
-              mx: 0.5,
-            }}
           />
 
 
-          {/* ================================================= */}
-          {/* فونت */}
-          {/* ================================================= */}
+          {/* Font */}
 
           <FormControl
             size="small"
             sx={{
-              minWidth: 190,
+              minWidth: 160,
             }}
           >
 
             <InputLabel>
-              نوع متن
+              فونت
             </InputLabel>
 
             <Select
-              label="نوع متن"
+              label="فونت"
               defaultValue="Arial"
               onChange={
                 handleFontFamily
               }
             >
 
-              <MenuItem
-                value="Arial"
-                sx={{
-                  fontFamily:
-                    'Arial',
-                }}
-              >
+              <MenuItem value="Arial">
                 Arial
               </MenuItem>
 
-              <MenuItem
-                value="Calibri"
-                sx={{
-                  fontFamily:
-                    'Calibri',
-                }}
-              >
+              <MenuItem value="Calibri">
                 Calibri
               </MenuItem>
 
-              <MenuItem
-                value="'Times New Roman'"
-                sx={{
-                  fontFamily:
-                    'Times New Roman',
-                }}
-              >
+              <MenuItem value="'Times New Roman'">
                 Times New Roman
               </MenuItem>
 
-              <MenuItem
-                value="'B Nazanin'"
-                sx={{
-                  fontFamily:
-                    'B Nazanin',
-                }}
-              >
+              <MenuItem value="'B Nazanin'">
                 B Nazanin
               </MenuItem>
 
-              <MenuItem
-                value="'B Titr'"
-                sx={{
-                  fontFamily:
-                    'B Titr',
-                }}
-              >
+              <MenuItem value="'B Titr'">
                 B Titr
               </MenuItem>
 
-              <MenuItem
-                value="'B Mitra'"
-                sx={{
-                  fontFamily:
-                    'B Mitra',
-                }}
-              >
+              <MenuItem value="'B Mitra'">
                 B Mitra
               </MenuItem>
 
-              <MenuItem
-                value="'B Yekan'"
-                sx={{
-                  fontFamily:
-                    'B Yekan',
-                }}
-              >
+              <MenuItem value="'B Yekan'">
                 B Yekan
               </MenuItem>
 
-              <MenuItem
-                value="Tahoma"
-                sx={{
-                  fontFamily:
-                    'Tahoma',
-                }}
-              >
+              <MenuItem value="Tahoma">
                 Tahoma
               </MenuItem>
 
-              <MenuItem
-                value="Verdana"
-                sx={{
-                  fontFamily:
-                    'Verdana',
-                }}
-              >
+              <MenuItem value="Verdana">
                 Verdana
               </MenuItem>
 
@@ -1005,14 +1175,12 @@ const OnMessage = ({
           </FormControl>
 
 
-          {/* ================================================= */}
-          {/* اندازه فونت */}
-          {/* ================================================= */}
+          {/* Font Size */}
 
           <FormControl
             size="small"
             sx={{
-              minWidth: 100,
+              minWidth: 80,
             }}
           >
 
@@ -1060,10 +1228,6 @@ const OnMessage = ({
                 32
               </MenuItem>
 
-              <MenuItem value="36px">
-                36
-              </MenuItem>
-
             </Select>
 
           </FormControl>
@@ -1072,15 +1236,10 @@ const OnMessage = ({
           <Divider
             orientation="vertical"
             flexItem
-            sx={{
-              mx: 0.5,
-            }}
           />
 
 
-          {/* ================================================= */}
-          {/* رنگ متن */}
-          {/* ================================================= */}
+          {/* Text Color */}
 
           <Tooltip title="رنگ متن">
 
@@ -1105,9 +1264,7 @@ const OnMessage = ({
           </Tooltip>
 
 
-          {/* ================================================= */}
-          {/* هایلایت */}
-          {/* ================================================= */}
+          {/* Highlight */}
 
           <Tooltip title="هایلایت">
 
@@ -1135,15 +1292,10 @@ const OnMessage = ({
           <Divider
             orientation="vertical"
             flexItem
-            sx={{
-              mx: 0.5,
-            }}
           />
 
 
-          {/* ================================================= */}
-          {/* لیست */}
-          {/* ================================================= */}
+          {/* Bullet */}
 
           <Tooltip title="لیست نقطه‌ای">
 
@@ -1162,6 +1314,8 @@ const OnMessage = ({
 
           </Tooltip>
 
+
+          {/* Number */}
 
           <Tooltip title="لیست شماره‌ای">
 
@@ -1184,15 +1338,259 @@ const OnMessage = ({
           <Divider
             orientation="vertical"
             flexItem
-            sx={{
-              mx: 0.5,
-            }}
           />
 
 
           {/* ================================================= */}
-          {/* راست‌چین */}
+          {/* TABLE */}
           {/* ================================================= */}
+
+          <Tooltip title="ایجاد جدول">
+
+            <IconButton
+              size="small"
+              onClick={
+                handleOpenTablePicker
+              }
+              sx={{
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+              }}
+            >
+
+              <TableChartIcon />
+
+            </IconButton>
+
+          </Tooltip>
+
+
+          {/* ================================================= */}
+          {/* TABLE PICKER */}
+          {/* ================================================= */}
+
+          <Popover
+            open={
+              Boolean(tablePickerAnchor)
+            }
+            anchorEl={
+              tablePickerAnchor
+            }
+            onClose={
+              handleCloseTablePicker
+            }
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+          >
+
+            <Box className="table-picker">
+
+              <Typography
+                className="table-picker-size"
+              >
+                {selectedTableRows > 0 &&
+                selectedTableCols > 0
+                  ? `${selectedTableRows} × ${selectedTableCols}`
+                  : 'تعداد سطر و ستون را انتخاب کنید'}
+              </Typography>
+
+
+              <Box className="table-picker-grid">
+
+                {Array.from({
+                  length:
+                    MAX_TABLE_ROWS,
+                }).map(
+                  (_, rowIndex) => (
+
+                    <Box
+                      key={rowIndex}
+                      className="table-picker-row"
+                    >
+
+                      {Array.from({
+                        length:
+                          MAX_TABLE_COLS,
+                      }).map(
+                        (_, colIndex) => {
+
+                          const row =
+                            rowIndex + 1;
+
+                          const col =
+                            colIndex + 1;
+
+                          const active =
+                            row <=
+                              selectedTableRows &&
+                            col <=
+                              selectedTableCols;
+
+                          return (
+
+                            <Box
+                              key={`${row}-${col}`}
+                              className={
+                                `table-picker-cell ${
+                                  active
+                                    ? 'active'
+                                    : ''
+                                }`
+                              }
+                              onMouseEnter={() =>
+                                handleTableCellHover(
+                                  row,
+                                  col,
+                                )
+                              }
+                              onClick={() =>
+                                handleCreateSelectedTable(
+                                  row,
+                                  col,
+                                )
+                              }
+                            />
+
+                          );
+                        },
+                      )}
+
+                    </Box>
+
+                  ),
+                )}
+
+              </Box>
+
+
+              <Typography
+                className="table-picker-footer"
+              >
+                برای ایجاد جدول، روی اندازه موردنظر کلیک کنید
+              </Typography>
+
+            </Box>
+
+          </Popover>
+
+
+          {/* Add Row */}
+
+          <Tooltip title="افزودن سطر">
+
+            <IconButton
+              size="small"
+              disabled={!isInsideTable}
+              onClick={
+                handleAddRow
+              }
+            >
+
+              <ViewHeadlineIcon />
+
+            </IconButton>
+
+          </Tooltip>
+
+
+          {/* Add Column */}
+
+          <Tooltip title="افزودن ستون">
+
+            <IconButton
+              size="small"
+              disabled={!isInsideTable}
+              onClick={
+                handleAddColumn
+              }
+            >
+
+              <ViewWeekIcon />
+
+            </IconButton>
+
+          </Tooltip>
+
+
+          {/* Delete Row */}
+
+          <Tooltip title="حذف سطر">
+
+            <IconButton
+              size="small"
+              color="error"
+              disabled={!isInsideTable}
+              onClick={
+                handleDeleteRow
+              }
+            >
+
+              <RemoveIcon />
+
+            </IconButton>
+
+          </Tooltip>
+
+
+          {/* Delete Column */}
+
+          <Tooltip title="حذف ستون">
+
+            <IconButton
+              size="small"
+              color="error"
+              disabled={!isInsideTable}
+              onClick={
+                handleDeleteColumn
+              }
+            >
+
+              <RemoveIcon
+                sx={{
+                  transform:
+                    'rotate(90deg)',
+                }}
+              />
+
+            </IconButton>
+
+          </Tooltip>
+
+
+          {/* Delete Table */}
+
+          <Tooltip title="حذف جدول">
+
+            <IconButton
+              size="small"
+              color="error"
+              disabled={!isInsideTable}
+              onClick={
+                handleDeleteTable
+              }
+            >
+
+              <DeleteOutlineIcon />
+
+            </IconButton>
+
+          </Tooltip>
+
+
+          <Divider
+            orientation="vertical"
+            flexItem
+          />
+
+
+          {/* Right */}
 
           <Tooltip title="راست‌چین">
 
@@ -1208,15 +1606,15 @@ const OnMessage = ({
                   .run()
               }
             >
+
               <FormatAlignRightIcon />
+
             </IconButton>
 
           </Tooltip>
 
 
-          {/* ================================================= */}
-          {/* وسط‌چین */}
-          {/* ================================================= */}
+          {/* Center */}
 
           <Tooltip title="وسط‌چین">
 
@@ -1232,15 +1630,15 @@ const OnMessage = ({
                   .run()
               }
             >
+
               <FormatAlignCenterIcon />
+
             </IconButton>
 
           </Tooltip>
 
 
-          {/* ================================================= */}
-          {/* چپ‌چین */}
-          {/* ================================================= */}
+          {/* Left */}
 
           <Tooltip title="چپ‌چین">
 
@@ -1256,15 +1654,15 @@ const OnMessage = ({
                   .run()
               }
             >
+
               <FormatAlignLeftIcon />
+
             </IconButton>
 
           </Tooltip>
 
 
-          {/* ================================================= */}
           {/* Justify */}
-          {/* ================================================= */}
 
           <Tooltip title="تراز دوطرفه">
 
@@ -1280,7 +1678,9 @@ const OnMessage = ({
                   .run()
               }
             >
+
               <FormatAlignJustifyIcon />
+
             </IconButton>
 
           </Tooltip>
@@ -1289,15 +1689,10 @@ const OnMessage = ({
           <Divider
             orientation="vertical"
             flexItem
-            sx={{
-              mx: 0.5,
-            }}
           />
 
 
-          {/* ================================================= */}
-          {/* لینک */}
-          {/* ================================================= */}
+          {/* Link */}
 
           <Tooltip title="لینک">
 
@@ -1307,20 +1702,25 @@ const OnMessage = ({
                 handleSetLink
               }
             >
+
               <LinkIcon />
+
             </IconButton>
 
           </Tooltip>
 
 
-          {/* ================================================= */}
           {/* Undo */}
-          {/* ================================================= */}
 
           <Tooltip title="بازگشت">
 
             <IconButton
               size="small"
+              disabled={
+                !editor
+                  .can()
+                  .undo()
+              }
               onClick={() =>
                 editor
                   .chain()
@@ -1329,20 +1729,25 @@ const OnMessage = ({
                   .run()
               }
             >
+
               <UndoIcon />
+
             </IconButton>
 
           </Tooltip>
 
 
-          {/* ================================================= */}
           {/* Redo */}
-          {/* ================================================= */}
 
-          <Tooltip title="جلو">
+          <Tooltip title="بازگردانی">
 
             <IconButton
               size="small"
+              disabled={
+                !editor
+                  .can()
+                  .redo()
+              }
               onClick={() =>
                 editor
                   .chain()
@@ -1351,15 +1756,15 @@ const OnMessage = ({
                   .run()
               }
             >
+
               <RedoIcon />
+
             </IconButton>
 
           </Tooltip>
 
 
-          {/* ================================================= */}
-          {/* پاک کردن قالب */}
-          {/* ================================================= */}
+          {/* Clear */}
 
           <Tooltip title="پاک کردن قالب‌بندی">
 
@@ -1374,7 +1779,9 @@ const OnMessage = ({
                   .run()
               }
             >
+
               <FormatClearIcon />
+
             </IconButton>
 
           </Tooltip>
@@ -1383,44 +1790,10 @@ const OnMessage = ({
 
 
         {/* ================================================= */}
-        {/* متن */}
+        {/* EDITOR CONTENT */}
         {/* ================================================= */}
 
-        <Box
-          sx={{
-            minHeight: 350,
-            p: 2,
-
-            '& .ProseMirror': {
-              minHeight: 300,
-              outline: 'none',
-              direction: 'rtl',
-              textAlign: 'right',
-              fontSize: '16px',
-              lineHeight: 1.8,
-            },
-
-            '& .ProseMirror p': {
-              margin:
-                '0 0 8px 0',
-            },
-
-            '& .ProseMirror ul': {
-              paddingRight:
-                '30px',
-            },
-
-            '& .ProseMirror ol': {
-              paddingRight:
-                '30px',
-            },
-
-            '& .ProseMirror a': {
-              textDecoration:
-                'underline',
-            },
-          }}
-        >
+        <Box className="editor-content-wrapper">
 
           <EditorContent
             editor={editor}
@@ -1432,20 +1805,10 @@ const OnMessage = ({
 
 
       {/* ================================================= */}
-      {/* فایل + گیرندگان */}
+      {/* FILE + RECIPIENT */}
       {/* ================================================= */}
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns:
-            '1fr 1fr',
-          gap: 2,
-          mb: 2,
-        }}
-      >
-
-        {/* فایل */}
+      <Box className="message-bottom-fields">
 
         <Button
           variant="outlined"
@@ -1459,22 +1822,21 @@ const OnMessage = ({
             height: 56,
             justifyContent:
               'flex-start',
-            overflow: 'hidden',
+            overflow:
+              'hidden',
             textOverflow:
               'ellipsis',
             whiteSpace:
               'nowrap',
           }}
         >
+
           {selectedFile
             ? selectedFile.name
             : 'فایل ضمیمه'}
+
         </Button>
 
-
-        {/* ================================================= */}
-        {/* گیرندگان */}
-        {/* ================================================= */}
 
         <Autocomplete
           multiple
@@ -1487,9 +1849,11 @@ const OnMessage = ({
             _,
             newValue,
           ) => {
+
             setSelectedUsers(
               newValue,
             );
+
           }}
 
           getOptionLabel={(user) =>
@@ -1500,8 +1864,7 @@ const OnMessage = ({
             option,
             value,
           ) =>
-            option.id ===
-            value.id
+            option.id === value.id
           }
 
           renderTags={(value) =>
@@ -1515,33 +1878,12 @@ const OnMessage = ({
 
                   <Box
                     component="span"
+                    className="recipient-tag"
                     onDoubleClick={() =>
                       handleRemoveRecipient(
                         user.id,
                       )
                     }
-                    sx={{
-                      display:
-                        'inline-flex',
-                      alignItems:
-                        'center',
-                      px: 1.5,
-                      py: 0.5,
-                      mr: 0.5,
-                      mb: 0.5,
-                      borderRadius: 1,
-                      backgroundColor:
-                        'action.selected',
-                      cursor:
-                        'pointer',
-                      userSelect:
-                        'none',
-
-                      '&:hover': {
-                        backgroundColor:
-                          'action.hover',
-                      },
-                    }}
                   >
 
                     {user.firstName}{' '}
@@ -1561,8 +1903,7 @@ const OnMessage = ({
               {...params}
               label="گیرندگان"
               placeholder={
-                selectedUsers.length ===
-                0
+                selectedUsers.length === 0
                   ? 'گیرندگان را انتخاب کنید'
                   : ''
               }
@@ -1576,7 +1917,7 @@ const OnMessage = ({
 
 
       {/* ================================================= */}
-      {/* Modal فایل */}
+      {/* FILE DIALOG */}
       {/* ================================================= */}
 
       <Dialog
@@ -1586,16 +1927,11 @@ const OnMessage = ({
         }
         fullWidth
         maxWidth="sm"
+        dir="rtl"
       >
 
         <DialogTitle
-          sx={{
-            display: 'flex',
-            alignItems:
-              'center',
-            justifyContent:
-              'space-between',
-          }}
+          className="file-dialog-title"
         >
 
           انتخاب فایل
@@ -1604,40 +1940,21 @@ const OnMessage = ({
             onClick={
               handleCloseFileModal
             }
+            disabled={uploading}
           >
+
             <CloseIcon />
+
           </IconButton>
 
         </DialogTitle>
 
 
-        <DialogContent
-          dividers
-        >
+        <DialogContent dividers>
 
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection:
-                'column',
-              alignItems:
-                'center',
-              gap: 2,
-              py: 3,
-            }}
-          >
+          <Box className="file-dialog-content">
 
-            {/* توضیحات */}
-
-            <Box
-              sx={{
-                width: '100%',
-                p: 2,
-                borderRadius: 1,
-                bgcolor:
-                  'background.default',
-              }}
-            >
+            <Box className="file-info-box">
 
               <Typography
                 variant="body2"
@@ -1663,8 +1980,6 @@ const OnMessage = ({
             </Box>
 
 
-            {/* خطا */}
-
             {fileError && (
 
               <Alert
@@ -1676,13 +1991,13 @@ const OnMessage = ({
                   width: '100%',
                 }}
               >
+
                 {fileError}
+
               </Alert>
 
             )}
 
-
-            {/* انتخاب فایل */}
 
             <Button
               variant="outlined"
@@ -1710,25 +2025,11 @@ const OnMessage = ({
             </Button>
 
 
-            {/* فایل انتخاب شده */}
-
             {selectedFile && (
 
-              <Box
-                sx={{
-                  width: '100%',
-                  p: 2,
-                  border:
-                    '1px solid',
-                  borderColor:
-                    'divider',
-                  borderRadius: 1,
-                }}
-              >
+              <Box className="selected-file-box">
 
-                <Typography
-                  fontWeight="bold"
-                >
+                <Typography fontWeight="bold">
                   فایل انتخاب شده:
                 </Typography>
 
@@ -1775,14 +2076,11 @@ const OnMessage = ({
         </DialogContent>
 
 
-        {/* ================================================= */}
-        {/* آپلود */}
-        {/* ================================================= */}
-
         <DialogActions
           sx={{
             px: 3,
             pb: 2,
+            direction: 'rtl',
           }}
         >
 
@@ -1812,17 +2110,10 @@ const OnMessage = ({
 
 
       {/* ================================================= */}
-      {/* دکمه‌های اصلی */}
+      {/* ACTION BUTTONS */}
       {/* ================================================= */}
 
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent:
-            'flex-end',
-          gap: 1,
-        }}
-      >
+      <Box className="message-actions">
 
         <Button
           variant="contained"
@@ -1838,7 +2129,9 @@ const OnMessage = ({
 
         <Button
           variant="outlined"
-          onClick={onClose}
+          onClick={
+            onClose
+          }
         >
           انصراف
         </Button>
@@ -1848,5 +2141,6 @@ const OnMessage = ({
     </Box>
   );
 };
+
 
 export default OnMessage;

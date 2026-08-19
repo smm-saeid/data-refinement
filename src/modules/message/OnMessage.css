@@ -1,0 +1,883 @@
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+.on-message {
+  width: 100%;
+  direction: rtl;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   EDITOR
+   ========================================================= */
+
+.on-message-editor {
+  width: 100%;
+
+  border: 1px solid #d5d5d5;
+  border-radius: 6px;
+
+  overflow: hidden;
+
+  direction: rtl;
+
+  margin-bottom: 16px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   EDITOR TITLE
+   ========================================================= */
+
+.editor-title {
+  padding: 12px 16px;
+
+  background: #f7f7f7;
+
+  border-bottom: 1px solid #d5d5d5;
+
+  text-align: right;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.editor-toolbar {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-start;
+
+  flex-wrap: wrap;
+
+  gap: 4px;
+
+  padding: 8px;
+
+  background: #f7f7f7;
+
+  border-bottom: 1px solid #d5d5d5;
+
+  direction: rtl;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TOOLBAR DIVIDER
+   ========================================================= */
+
+.editor-toolbar .MuiDivider-root {
+  margin: 0 4px;
+}
+
+
+/* =========================================================
+   EDITOR CONTENT
+   ========================================================= */
+
+.editor-content-wrapper {
+  width: 100%;
+
+  min-height: 350px;
+
+  padding: 16px;
+
+  background: #ffffff;
+
+  direction: rtl;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TIPTAP
+   ========================================================= */
+
+.editor-content-wrapper .ProseMirror {
+  width: 100%;
+
+  min-height: 300px;
+
+  outline: none;
+
+  direction: rtl;
+
+  text-align: right;
+
+  font-size: 16px;
+
+  line-height: 1.8;
+
+  color: #000000;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PARAGRAPH
+   ========================================================= */
+
+.editor-content-wrapper .ProseMirror p {
+  margin: 0 0 8px 0;
+}
+
+
+/* =========================================================
+   LIST
+   ========================================================= */
+
+.editor-content-wrapper .ProseMirror ul {
+  padding-right: 30px;
+}
+
+
+.editor-content-wrapper .ProseMirror ol {
+  padding-right: 30px;
+}
+
+
+/* =========================================================
+   LINK
+   ========================================================= */
+
+.editor-content-wrapper .ProseMirror a {
+  text-decoration: underline;
+
+  color: #1565c0;
+}
+
+
+/* =========================================================
+   =========================================================
+   TABLE
+   =========================================================
+   ========================================================= */
+
+
+/* =========================================================
+   TABLE WRAPPER
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+.tableWrapper {
+  width: 100%;
+
+  overflow-x: auto;
+
+  margin: 20px 0;
+
+  padding: 2px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TABLE MAIN
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table {
+  width: 100%;
+
+  min-width: 500px;
+
+  border-collapse: collapse !important;
+
+  border-spacing: 0 !important;
+
+  table-layout: fixed;
+
+  direction: rtl;
+
+  background: #ffffff;
+
+  border: 2px solid #000000 !important;
+
+  margin: 10px 0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TABLE ROW
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+tr {
+  height: 45px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TABLE HEADER
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+th {
+  position: relative;
+
+  min-width: 80px;
+
+  height: 45px;
+
+  padding: 8px 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #000000 !important;
+
+  background: #eeeeee !important;
+
+  color: #000000;
+
+  font-weight: 700;
+
+  text-align: right;
+
+  vertical-align: middle;
+}
+
+
+/* =========================================================
+   TABLE CELL
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td {
+  position: relative;
+
+  min-width: 80px;
+
+  height: 45px;
+
+  padding: 8px 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #000000 !important;
+
+  background: #ffffff !important;
+
+  color: #000000;
+
+  text-align: right;
+
+  vertical-align: middle;
+}
+
+
+/* =========================================================
+   FORCE BORDER
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td,
+.editor-content-wrapper
+.ProseMirror
+table
+th {
+  border-top: 1px solid #000000 !important;
+
+  border-right: 1px solid #000000 !important;
+
+  border-bottom: 1px solid #000000 !important;
+
+  border-left: 1px solid #000000 !important;
+}
+
+
+/* =========================================================
+   EMPTY CELL
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td::after,
+.editor-content-wrapper
+.ProseMirror
+table
+th::after {
+  content: '';
+
+  display: block;
+
+  min-height: 20px;
+}
+
+
+/* =========================================================
+   CELL PARAGRAPH
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td
+p,
+
+.editor-content-wrapper
+.ProseMirror
+table
+th
+p {
+  margin: 0;
+
+  min-height: 20px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   TABLE HEADER PARAGRAPH
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+th
+p {
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TABLE HOVER
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+tbody
+tr:hover
+td {
+  background: #fafafa !important;
+}
+
+
+/* =========================================================
+   SELECTED CELL
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+.selectedCell {
+  background: rgba(25, 118, 210, 0.15) !important;
+}
+
+
+/* =========================================================
+   TABLE SELECTION
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td.selectedCell,
+.editor-content-wrapper
+.ProseMirror
+table
+th.selectedCell {
+  background: rgba(25, 118, 210, 0.18) !important;
+
+  border-color: #000000 !important;
+}
+
+
+/* =========================================================
+   COLUMN RESIZE
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+.column-resize-handle {
+  position: absolute;
+
+  top: 0;
+
+  right: -2px;
+
+  bottom: 0;
+
+  width: 4px;
+
+  background: #1976d2;
+
+  pointer-events: none;
+
+  z-index: 10;
+}
+
+
+/* =========================================================
+   RESIZE CURSOR
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+
+/* =========================================================
+   TABLE FIRST ROW
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+tr:first-child
+th,
+.editor-content-wrapper
+.ProseMirror
+table
+tr:first-child
+td {
+  border-top: 1px solid #000000 !important;
+}
+
+
+/* =========================================================
+   TABLE LAST ROW
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+tr:last-child
+td,
+.editor-content-wrapper
+.ProseMirror
+table
+tr:last-child
+th {
+  border-bottom: 1px solid #000000 !important;
+}
+
+
+/* =========================================================
+   TABLE FIRST COLUMN
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td:first-child,
+.editor-content-wrapper
+.ProseMirror
+table
+th:first-child {
+  border-right: 1px solid #000000 !important;
+}
+
+
+/* =========================================================
+   TABLE LAST COLUMN
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td:last-child,
+.editor-content-wrapper
+.ProseMirror
+table
+th:last-child {
+  border-left: 1px solid #000000 !important;
+}
+
+
+/* =========================================================
+   TABLE TEXT
+   ========================================================= */
+
+.editor-content-wrapper
+.ProseMirror
+table
+td,
+.editor-content-wrapper
+.ProseMirror
+table
+th {
+  word-break: break-word;
+
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   =========================================================
+   TABLE PICKER
+   =========================================================
+   ========================================================= */
+
+.table-picker {
+  width: 320px;
+
+  padding: 16px;
+
+  direction: rtl;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PICKER SIZE
+   ========================================================= */
+
+.table-picker-size {
+  width: 100%;
+
+  margin-bottom: 12px !important;
+
+  text-align: center;
+
+  font-size: 18px !important;
+
+  font-weight: 700 !important;
+
+  color: #333333;
+}
+
+
+/* =========================================================
+   PICKER GRID
+   ========================================================= */
+
+.table-picker-grid {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+  padding: 5px;
+
+  border: 1px solid #999999;
+
+  background: #f5f5f5;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PICKER ROW
+   ========================================================= */
+
+.table-picker-row {
+  display: flex;
+
+  gap: 3px;
+}
+
+
+/* =========================================================
+   PICKER CELL
+   ========================================================= */
+
+.table-picker-cell {
+  width: 25px;
+
+  height: 25px;
+
+  flex: 0 0 25px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #666666;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.08s ease,
+    border-color 0.08s ease;
+}
+
+
+/* =========================================================
+   PICKER CELL HOVER
+   ========================================================= */
+
+.table-picker-cell:hover {
+  background: #bbdefb;
+
+  border-color: #1976d2;
+}
+
+
+/* =========================================================
+   PICKER CELL ACTIVE
+   ========================================================= */
+
+.table-picker-cell.active {
+  background: #1976d2;
+
+  border-color: #0d47a1;
+}
+
+
+/* =========================================================
+   PICKER FOOTER
+   ========================================================= */
+
+.table-picker-footer {
+  margin-top: 12px !important;
+
+  padding-top: 10px;
+
+  border-top: 1px solid #e0e0e0;
+
+  text-align: center;
+
+  font-size: 13px !important;
+
+  color: #666666;
+}
+
+
+/* =========================================================
+   =========================================================
+   RECIPIENT
+   =========================================================
+   ========================================================= */
+
+.message-bottom-fields {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 16px;
+
+  margin-bottom: 16px;
+
+  direction: rtl;
+}
+
+
+/* =========================================================
+   RECIPIENT TAG
+   ========================================================= */
+
+.recipient-tag {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 4px 12px;
+
+  margin-right: 4px;
+
+  margin-bottom: 4px;
+
+  border-radius: 4px;
+
+  background: #eeeeee;
+
+  cursor: pointer;
+
+  user-select: none;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   RECIPIENT TAG HOVER
+   ========================================================= */
+
+.recipient-tag:hover {
+  background: #e0e0e0;
+}
+
+
+/* =========================================================
+   =========================================================
+   FILE DIALOG
+   =========================================================
+   ========================================================= */
+
+.file-dialog-title {
+  display: flex !important;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  direction: rtl;
+}
+
+
+/* =========================================================
+   FILE DIALOG CONTENT
+   ========================================================= */
+
+.file-dialog-content {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 16px;
+
+  padding: 24px 0;
+
+  direction: rtl;
+}
+
+
+/* =========================================================
+   FILE INFO
+   ========================================================= */
+
+.file-info-box {
+  width: 100%;
+
+  padding: 16px;
+
+  border-radius: 6px;
+
+  background: #f7f7f7;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   SELECTED FILE
+   ========================================================= */
+
+.selected-file-box {
+  width: 100%;
+
+  padding: 16px;
+
+  border: 1px solid #d5d5d5;
+
+  border-radius: 6px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   =========================================================
+   ACTIONS
+   =========================================================
+   ========================================================= */
+
+.message-actions {
+  display: flex;
+
+  justify-content: flex-start;
+
+  align-items: center;
+
+  gap: 8px;
+
+  direction: rtl;
+}
+
+
+/* =========================================================
+   SEND BUTTON
+   ========================================================= */
+
+.message-actions .MuiButton-root {
+  min-width: 100px;
+}
+
+
+/* =========================================================
+   =========================================================
+   RESPONSIVE
+   =========================================================
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .editor-toolbar {
+    gap: 3px;
+  }
+
+  .editor-content-wrapper {
+    padding: 12px;
+  }
+
+  .editor-content-wrapper
+  .ProseMirror
+  table {
+    min-width: 500px;
+  }
+}
+
+
+@media (max-width: 700px) {
+
+  .message-bottom-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-content-wrapper {
+    padding: 10px;
+  }
+
+  .editor-content-wrapper
+  .ProseMirror
+  table {
+    min-width: 600px;
+  }
+
+  .table-picker {
+    width: 290px;
+  }
+
+  .table-picker-cell {
+    width: 22px;
+
+    height: 22px;
+
+    flex-basis: 22px;
+  }
+
+  .message-actions {
+    flex-wrap: wrap;
+  }
+}

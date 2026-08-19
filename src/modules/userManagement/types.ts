@@ -16,6 +16,7 @@ export type UserCompany = {
   };
 };
 
+
 // ==================================================
 // User
 // ==================================================
@@ -43,7 +44,6 @@ export type User = {
   gender?: string;
   phone?: string;
   email?: string;
-
   birthDate?: string;
   image?: string;
 
@@ -55,6 +55,7 @@ export type User = {
   isLocked?: boolean;
 };
 
+
 // ==================================================
 // User Form
 // ==================================================
@@ -62,7 +63,6 @@ export type User = {
 export type UserForm = {
   firstName: string;
   lastName: string;
-
   username: string;
 
   password: string;
@@ -79,6 +79,7 @@ export type UserForm = {
   organization: string;
 };
 
+
 // ==================================================
 // Users API Response
 // ==================================================
@@ -88,4 +89,34 @@ export type UsersResponse = {
   total: number;
   skip: number;
   limit: number;
+};
+
+
+// ==================================================
+// Message
+// ==================================================
+
+export type Message = {
+  id: number;
+
+  title: string;
+
+  text: string;
+
+  sender?: User;
+
+  recipients?: User[];
+
+  createdAt?: string;
+
+  updatedAt?: string;
+
+  isRead?: boolean;
+
+  attachment?: {
+    name: string;
+    size: number;
+    type?: string;
+    url?: string;
+  };
 };
