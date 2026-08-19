@@ -21,7 +21,6 @@ const loadFontAsBase64 = async (url: string): Promise<string> => {
   }
 
   const buffer = await response.arrayBuffer();
-
   const bytes = new Uint8Array(buffer);
 
   let binary = '';
@@ -70,7 +69,7 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
 
       /*
        * ==================================================
-       * 3. ثبت فونت‌ها در jsPDF
+       * 3. ثبت فونت‌ها
        * ==================================================
        */
 
@@ -86,10 +85,6 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
 
       pdf.addFont('Vazirmatn-Bold.ttf', 'Vazirmatn', 'bold');
 
-      /*
-       * فونت پیش‌فرض
-       */
-
       pdf.setFont('Vazirmatn', 'normal');
 
       /*
@@ -99,12 +94,7 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
        */
 
       pdf.setFont('Vazirmatn', 'bold');
-
       pdf.setFontSize(16);
-
-      /*
-       * عنوان را سمت راست می‌گذاریم
-       */
 
       pdf.text('گزارش اطلاعات کارتابل', 287, 15, {
         align: 'right',
@@ -128,7 +118,7 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
           headerName: 'ردیف',
         },
         ...visibleColumns,
-      ];
+      ].reverse();
 
       /*
        * ==================================================
@@ -192,6 +182,10 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
             return JSON.stringify(value);
           }
 
+          /*
+           * سایر مقادیر
+           */
+
           return String(value);
         });
       });
@@ -230,23 +224,16 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
 
         headStyles: {
           font: 'Vazirmatn',
-
           fontStyle: 'bold',
-
           fontSize: 8,
-
           halign: 'center',
-
           valign: 'middle',
         },
 
         bodyStyles: {
           font: 'Vazirmatn',
-
           fontStyle: 'normal',
-
           halign: 'center',
-
           valign: 'middle',
         },
 
@@ -257,28 +244,30 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
         showHead: 'everyPage',
 
         /*
-         * اجازه نده ردیف نصف شود
+         * جلوگیری از نصف شدن ردیف
          */
 
         rowPageBreak: 'avoid',
 
         /*
-         * RTL
+         * شکستن افقی جدول
          */
 
         horizontalPageBreak: true,
 
+        /*
+         * تکرار ستون اول در صفحات افقی
+         */
+
         horizontalPageBreakRepeat: 0,
 
         /*
-         * بعد از هر صفحه
+         * ==================================================
+         * شماره صفحه
+         * ==================================================
          */
 
         didDrawPage: () => {
-          /*
-           * شماره صفحه
-           */
-
           const pageNumber = pdf.getNumberOfPages();
 
           pdf.setFont('Vazirmatn', 'normal');
@@ -291,7 +280,7 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
 
       /*
        * ==================================================
-       * 9. دانلود
+       * 9. دانلود PDF
        * ==================================================
        */
 
@@ -306,7 +295,6 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
   return (
     <Button
       variant="contained"
-      color="error"
       startIcon={<PictureAsPdfIcon />}
       onClick={handleDownloadPdf}
     >
