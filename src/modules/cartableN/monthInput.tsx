@@ -1,7 +1,12 @@
 import { Autocomplete, Box, TextField, Typography } from '@mui/material';
 
-export default function Month() {
-  const month = [
+interface MonthProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export default function Month({ value, onChange }: MonthProps) {
+  const months = [
     'فروردین',
     'اردیبهشت',
     'خرداد',
@@ -15,6 +20,7 @@ export default function Month() {
     'بهمن',
     'اسفند',
   ];
+
   return (
     <Box
       sx={{
@@ -25,9 +31,14 @@ export default function Month() {
       }}
     >
       <Typography>ماه:</Typography>
+
       <Autocomplete
         disablePortal
-        options={month}
+        options={months}
+        value={value || null}
+        onChange={(_, newValue) => {
+          onChange(newValue ?? '');
+        }}
         sx={{ width: 150 }}
         renderInput={params => <TextField {...params} label="انتخاب کنید" />}
       />

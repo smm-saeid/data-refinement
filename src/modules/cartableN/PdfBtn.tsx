@@ -10,9 +10,6 @@ interface PdfButtonProps {
   columns: GridColDef[];
 }
 
-/*
- * تبدیل فایل TTF به Base64
- */
 const loadFontAsBase64 = async (url: string): Promise<string> => {
   const response = await fetch(url);
 
@@ -39,79 +36,31 @@ const loadFontAsBase64 = async (url: string): Promise<string> => {
 export default function PdfButton({ rows, columns }: PdfButtonProps) {
   const handleDownloadPdf = async () => {
     try {
-      /*
-       * ==================================================
-       * 1. ساخت PDF
-       * ==================================================
-       */
-
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4',
       });
-
-      /*
-       * ==================================================
-       * 2. لود فونت‌ها
-       * ==================================================
-       */
-
       const regularFont = await loadFontAsBase64(
         '/assets/pdf/Vazirmatn-Regular.ttf'
       );
-
       const mediumFont = await loadFontAsBase64(
         '/assets/pdf/Vazirmatn-Medium.ttf'
       );
-
       const boldFont = await loadFontAsBase64('/assets/pdf/Vazirmatn-Bold.ttf');
-
-      /*
-       * ==================================================
-       * 3. ثبت فونت‌ها
-       * ==================================================
-       */
-
       pdf.addFileToVFS('Vazirmatn-Regular.ttf', regularFont);
-
       pdf.addFileToVFS('Vazirmatn-Medium.ttf', mediumFont);
-
       pdf.addFileToVFS('Vazirmatn-Bold.ttf', boldFont);
-
       pdf.addFont('Vazirmatn-Regular.ttf', 'Vazirmatn', 'normal');
-
       pdf.addFont('Vazirmatn-Medium.ttf', 'Vazirmatn', 'medium');
-
       pdf.addFont('Vazirmatn-Bold.ttf', 'Vazirmatn', 'bold');
-
       pdf.setFont('Vazirmatn', 'normal');
-
-      /*
-       * ==================================================
-       * 4. عنوان
-       * ==================================================
-       */
-
       pdf.setFont('Vazirmatn', 'bold');
       pdf.setFontSize(16);
-
       pdf.text('گزارش اطلاعات کارتابل', 287, 15, {
         align: 'right',
       });
-
-      /*
-       * ==================================================
-       * 5. ستون‌های DataGrid
-       * ==================================================
-       */
-
       const visibleColumns = columns.filter(column => column.field);
-
-      /*
-       * ستون شماره ردیف
-       */
-
       const tableColumns = [
         {
           field: '__rowNumber',
@@ -119,83 +68,32 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
         },
         ...visibleColumns,
       ].reverse();
-
-      /*
-       * ==================================================
-       * 6. Header
-       * ==================================================
-       */
-
       const headers = tableColumns.map(
         column => column.headerName ?? column.field
       );
-
-      /*
-       * ==================================================
-       * 7. Data
-       * ==================================================
-       */
-
       const data = rows.map((row, rowIndex) => {
         return tableColumns.map(column => {
           let value: unknown;
-
-          /*
-           * شماره ردیف
-           */
-
           if (column.field === '__rowNumber') {
             value = rowIndex + 1;
           } else {
             value = row[column.field];
           }
-
-          /*
-           * مقدار خالی
-           */
-
           if (value === null || value === undefined) {
             return '';
           }
-
-          /*
-           * Boolean
-           */
-
           if (typeof value === 'boolean') {
             return value ? 'بله' : 'خیر';
           }
-
-          /*
-           * Array
-           */
-
           if (Array.isArray(value)) {
             return value.join(', ');
           }
-
-          /*
-           * Object
-           */
-
           if (typeof value === 'object') {
             return JSON.stringify(value);
           }
-
-          /*
-           * سایر مقادیر
-           */
-
           return String(value);
         });
       });
-
-      /*
-       * ==================================================
-       * 8. جدول
-       * ==================================================
-       */
-
       autoTable(pdf, {
         head: [headers],
 
@@ -236,37 +134,10 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
           halign: 'center',
           valign: 'middle',
         },
-
-        /*
-         * تکرار Header در هر صفحه
-         */
-
         showHead: 'everyPage',
-
-        /*
-         * جلوگیری از نصف شدن ردیف
-         */
-
         rowPageBreak: 'avoid',
-
-        /*
-         * شکستن افقی جدول
-         */
-
         horizontalPageBreak: true,
-
-        /*
-         * تکرار ستون اول در صفحات افقی
-         */
-
         horizontalPageBreakRepeat: 0,
-
-        /*
-         * ==================================================
-         * شماره صفحه
-         * ==================================================
-         */
-
         didDrawPage: () => {
           const pageNumber = pdf.getNumberOfPages();
 
@@ -277,13 +148,6 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
           pdf.text(`صفحه ${pageNumber}`, 8, 202);
         },
       });
-
-      /*
-       * ==================================================
-       * 9. دانلود PDF
-       * ==================================================
-       */
-
       pdf.save('cartable.pdf');
     } catch (error) {
       console.error('PDF Error:', error);

@@ -14,7 +14,6 @@ import DatePicker from 'react-multi-date-picker';
 import persian from 'react-date-object/calendars/persian';
 import persian_fa from 'react-date-object/locales/persian_fa';
 import InputIcon from 'react-multi-date-picker/components/input_icon';
-import { GridSearchIcon } from '@mui/x-data-grid';
 import CachedIcon from '@mui/icons-material/Cached';
 import TuneIcon from '@mui/icons-material/Tune';
 // import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -30,6 +29,7 @@ import ExcelBtn from './ExcelBtn';
 import DeleteBtn from './DeleteBtn';
 import PdfBtn from './PdfBtn';
 import data from './data.json';
+import SearchBtn from './searchBtn';
 
 const styles = {
   width: '150px',
@@ -40,6 +40,28 @@ const styles = {
 const gridData = data;
 
 export default function Cartable() {
+  const [rows, setRows] = useState(gridData);
+  const [filteredRows, setFilteredRows] = useState(rows);
+  const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
+    type: 'include',
+    ids: new Set(),
+  });
+  const [searchValues, setSearchValues] = useState({
+    month: '',
+    year: '',
+    processStatus: '',
+    yeganFrom: '',
+    yeganTo: '',
+    force: '',
+    orderNum: '',
+    sender: '',
+    employeeNumber: '',
+  });
+
+  const process = ['تایید', 'بررسی شد', 'در انتظار', 'مرجوعی'];
+  const forces = ['زمینی', 'هوایی', 'پدافند هوایی', 'دریایی'];
+  const communication = ['تامین', 'مالی'];
+
   const columns: GridColDef<(typeof rows)[number]>[] = [
     { field: 'process', headerName: 'عملیات', width: 100 },
     {
@@ -118,21 +140,91 @@ export default function Cartable() {
     },
   ];
 
-  const [rows, setRows] = useState(gridData);
+  const handleSearch = () => {
+    const monthMap: Record<string, number> = {
+      فروردین: 1,
+      اردیبهشت: 2,
+      خرداد: 3,
+      تیر: 4,
+      مرداد: 5,
+      شهریور: 6,
+      مهر: 7,
+      آبان: 8,
+      آذر: 9,
+      دی: 10,
+      بهمن: 11,
+      اسفند: 12,
+    };
 
-  const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
-    type: 'include',
-    ids: new Set(),
-  });
+    const result = rows.filter(row => {
+      // ماه
+      if (searchValues.month) {
+        if (row.month !== monthMap[searchValues.month]) {
+          return false;
+        }
+      }
 
-  const process = ['ارسال', 'دریافت'];
-  const forces = [
-    'نیرو زمینی',
-    'نیرو هوایی',
-    'نیرو پدافند هوایی',
-    'نیرو دریایی',
-  ];
-  const communication = ['تامین', 'دژبان'];
+      // سال
+      if (searchValues.year) {
+        if (String(row.year) !== searchValues.year) {
+          return false;
+        }
+      }
+      if (searchValues.processStatus) {
+        if (row.processStatus !== searchValues.processStatus) {
+          return false;
+        }
+      }
+      // شماره یگان فعلی - از
+      if (searchValues.yeganFrom) {
+        if (Number(row.curYegan) < Number(searchValues.yeganFrom)) {
+          return false;
+        }
+      }
+
+      // شماره یگان فعلی - تا
+      if (searchValues.yeganTo) {
+        if (Number(row.curYegan) > Number(searchValues.yeganTo)) {
+          return false;
+        }
+      }
+      if (searchValues.force) {
+        if (row.force !== searchValues.force) {
+          return false;
+        }
+      }
+      if (searchValues.orderNum) {
+        if (!String(row.orderNum).includes(searchValues.orderNum)) {
+          return false;
+        }
+      }
+      if (searchValues.sender) {
+        if (row.sender !== searchValues.sender) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    setFilteredRows(result);
+  };
+
+  const handleResetSearch = () => {
+    setSearchValues({
+      month: '',
+      year: '',
+      processStatus: '',
+      yeganFrom: '',
+      yeganTo: '',
+      force: '',
+      orderNum: '',
+      sender: '',
+      employeeNumber: '',
+    });
+
+    setFilteredRows(rows);
+  };
+
   return (
     <Box>
       <Box
@@ -177,8 +269,25 @@ export default function Cartable() {
             // justifyContent: 'space-between',
           }}
         >
-          <Month />
-          <NoInput title="سال" />
+          <Month
+            value={searchValues.month}
+            onChange={value =>
+              setSearchValues(prev => ({
+                ...prev,
+                month: value,
+              }))
+            }
+          />{' '}
+          <NoInput
+            title="سال"
+            value={searchValues.year}
+            onChange={value =>
+              setSearchValues(prev => ({
+                ...prev,
+                year: value,
+              }))
+            }
+          />
           <Box
             sx={{
               display: 'flex',
@@ -206,7 +315,6 @@ export default function Cartable() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-
               columnGap: '8px',
             }}
           >
@@ -215,6 +323,13 @@ export default function Cartable() {
               disablePortal
               options={process}
               sx={{ width: 150 }}
+              value={searchValues.processStatus || null}
+              onChange={(_, newValue) => {
+                setSearchValues(prev => ({
+                  ...prev,
+                  processStatus: newValue ?? '',
+                }));
+              }}
               renderInput={params => (
                 <TextField {...params} label="همه فرآیند ها" />
               )}
@@ -230,9 +345,27 @@ export default function Cartable() {
           >
             <Typography sx={{ marginLeft: '10px' }}>شماره یگان:</Typography>
             از:
-            <TextField sx={{ width: '70px' }} />
+            <TextField
+              value={searchValues.yeganFrom}
+              onChange={e =>
+                setSearchValues(prev => ({
+                  ...prev,
+                  yeganFrom: e.target.value,
+                }))
+              }
+              sx={{ width: '70px' }}
+            />
             تا:
-            <TextField sx={{ width: '70px' }} />
+            <TextField
+              value={searchValues.yeganTo}
+              onChange={e =>
+                setSearchValues(prev => ({
+                  ...prev,
+                  yeganTo: e.target.value,
+                }))
+              }
+              sx={{ width: '70px' }}
+            />
           </Box>
           <Box
             sx={{
@@ -247,13 +380,38 @@ export default function Cartable() {
               disablePortal
               options={forces}
               sx={{ width: 150 }}
+              value={searchValues.force || null}
+              onChange={(_, newValue) => {
+                setSearchValues(prev => ({
+                  ...prev,
+                  force: newValue ?? '',
+                }));
+              }}
               renderInput={params => (
                 <TextField {...params} label="همه نیرو ها" />
               )}
             />
           </Box>
-          <NoInput title="شماره کارمندی" />
-          <NoInput title="شماره دستور" />
+          <NoInput
+            title="شماره کارمندی"
+            value={searchValues.employeeNumber}
+            onChange={value =>
+              setSearchValues(prev => ({
+                ...prev,
+                employeeNumber: value,
+              }))
+            }
+          />
+          <NoInput
+            title="شماره دستور"
+            value={searchValues.orderNum}
+            onChange={value =>
+              setSearchValues(prev => ({
+                ...prev,
+                orderNum: value,
+              }))
+            }
+          />
           <Box
             sx={{
               display: 'flex',
@@ -267,6 +425,13 @@ export default function Cartable() {
               disablePortal
               options={communication}
               sx={{ width: 200 }}
+              value={searchValues.sender || null}
+              onChange={(_, newValue) => {
+                setSearchValues(prev => ({
+                  ...prev,
+                  sender: newValue ?? '',
+                }));
+              }}
               renderInput={params => <TextField {...params} label="" />}
             />
           </Box>
@@ -310,12 +475,11 @@ export default function Cartable() {
             bottom: '10px',
           }}
         >
-          <Button variant="contained">
-            <GridSearchIcon />
-          </Button>
-          <Button variant="contained">
+          <Button variant="contained" onClick={handleResetSearch}>
             <CachedIcon />
           </Button>
+
+          <SearchBtn onClick={handleSearch} />
         </Box>
       </form>
       <Box
@@ -358,11 +522,12 @@ export default function Cartable() {
           <DeleteBtn
             rows={rows}
             setRows={setRows}
+            setFilteredRows={setFilteredRows}
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
           />
-          <ExcelBtn rows={rows} columns={columns} />
-          <PdfBtn rows={rows} columns={columns} />
+          <ExcelBtn rows={filteredRows} columns={columns} />
+          <PdfBtn rows={filteredRows} columns={columns} />
           <Button variant="contained" size="medium">
             تهیه خروجی داده ها
           </Button>
@@ -373,7 +538,7 @@ export default function Cartable() {
         </Box>
         <Box sx={{ height: 400, width: '100%', marginTop: '20px' }}>
           <DataGrid
-            rows={rows}
+            rows={filteredRows}
             columns={columns}
             localeText={faIR.components.MuiDataGrid.defaultProps.localeText}
             initialState={{

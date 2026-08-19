@@ -1,6 +1,18 @@
 import { Box, TextField, Typography } from '@mui/material';
 
-export default function NoInput({ title, width = '210px' }) {
+interface NoInputProps {
+  title: string;
+  width?: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export default function NoInput({
+  title,
+  width = '210px',
+  value,
+  onChange,
+}: NoInputProps) {
   return (
     <Box
       sx={{
@@ -11,7 +23,12 @@ export default function NoInput({ title, width = '210px' }) {
       }}
     >
       <Typography>{title}:</Typography>
-      <TextField sx={{ width: width }} />
+
+      <TextField
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        sx={{ width }}
+      />
     </Box>
   );
 }
