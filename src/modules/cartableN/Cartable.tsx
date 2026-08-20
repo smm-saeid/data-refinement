@@ -30,6 +30,7 @@ import DeleteBtn from './DeleteBtn';
 import PdfBtn from './PdfBtn';
 import data from './data.json';
 import SearchBtn from './searchBtn';
+import AddCartAm from './addCartAm';
 
 const styles = {
   width: '150px',
@@ -63,7 +64,12 @@ export default function Cartable() {
   const communication = ['تامین', 'مالی'];
 
   const columns: GridColDef<(typeof rows)[number]>[] = [
-    { field: 'process', headerName: 'عملیات', width: 100 },
+    {
+      field: 'process',
+      headerName: 'عملیات',
+      width: 100,
+      renderCell: () => <AddCartAm />,
+    },
     {
       field: 'watched',
       headerName: 'وضعیت مشاهده',
@@ -536,10 +542,29 @@ export default function Cartable() {
             سفارشی سازی ستون ها
           </Button>
         </Box>
-        <Box sx={{ height: 400, width: '100%', marginTop: '20px' }}>
+        <Box
+          sx={{
+            height: 400,
+            width: '100%',
+            marginTop: '20px',
+          }}
+        >
           <DataGrid
             rows={filteredRows}
             columns={columns}
+            sx={{
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+
+              '& .MuiDataGrid-columnHeaderTitleContainer': {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              },
+            }}
             localeText={faIR.components.MuiDataGrid.defaultProps.localeText}
             initialState={{
               pagination: {

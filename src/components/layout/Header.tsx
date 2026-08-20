@@ -109,7 +109,7 @@ export default function Header() {
               height="55px"
             />
             <Typography variant="h6" sx={{ px: '1rem' }}>
-              سامانه جای گذاری اطلاعات داده آمائی
+              سامانه بار گذاری اطلاعات داده آمائی
             </Typography>
           </Box>
 
