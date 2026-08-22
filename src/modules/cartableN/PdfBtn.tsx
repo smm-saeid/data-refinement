@@ -1,5 +1,6 @@
 import { Button } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -10,6 +11,18 @@ interface PdfButtonProps {
   columns: GridColDef[];
 }
 
+// --------------------------------------
+// تبدیل اعداد انگلیسی به فارسی
+// --------------------------------------
+
+const toPersianDigits = (value: string | number): string => {
+  return String(value).replace(/\d/g, digit => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
+};
+
+// --------------------------------------
+// تبدیل فونت به Base64
+// --------------------------------------
+
 const loadFontAsBase64 = async (url: string): Promise<string> => {
   const response = await fetch(url);
 
@@ -18,6 +31,7 @@ const loadFontAsBase64 = async (url: string): Promise<string> => {
   }
 
   const buffer = await response.arrayBuffer();
+
   const bytes = new Uint8Array(buffer);
 
   let binary = '';
@@ -36,31 +50,74 @@ const loadFontAsBase64 = async (url: string): Promise<string> => {
 export default function PdfButton({ rows, columns }: PdfButtonProps) {
   const handleDownloadPdf = async () => {
     try {
+      // ----------------------------------
+      // اگر داده‌ای نداریم
+      // ----------------------------------
+
+      if (!rows.length) {
+        return;
+      }
+
+      // ----------------------------------
+      // ساخت PDF
+      // ----------------------------------
+
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4',
       });
+
+      // ----------------------------------
+      // فونت‌ها
+      // ----------------------------------
+
       const regularFont = await loadFontAsBase64(
         '/assets/pdf/Vazirmatn-Regular.ttf'
       );
+
       const mediumFont = await loadFontAsBase64(
         '/assets/pdf/Vazirmatn-Medium.ttf'
       );
+
       const boldFont = await loadFontAsBase64('/assets/pdf/Vazirmatn-Bold.ttf');
+
+      // ----------------------------------
+      // اضافه کردن فونت‌ها
+      // ----------------------------------
+
       pdf.addFileToVFS('Vazirmatn-Regular.ttf', regularFont);
+
       pdf.addFileToVFS('Vazirmatn-Medium.ttf', mediumFont);
+
       pdf.addFileToVFS('Vazirmatn-Bold.ttf', boldFont);
+
       pdf.addFont('Vazirmatn-Regular.ttf', 'Vazirmatn', 'normal');
+
       pdf.addFont('Vazirmatn-Medium.ttf', 'Vazirmatn', 'medium');
+
       pdf.addFont('Vazirmatn-Bold.ttf', 'Vazirmatn', 'bold');
+
       pdf.setFont('Vazirmatn', 'normal');
+
+      // ----------------------------------
+      // عنوان
+      // ----------------------------------
+
       pdf.setFont('Vazirmatn', 'bold');
+
       pdf.setFontSize(16);
+
       pdf.text('گزارش اطلاعات کارتابل', 287, 15, {
         align: 'right',
       });
+
+      // ----------------------------------
+      // ستون‌ها
+      // ----------------------------------
+
       const visibleColumns = columns.filter(column => column.field);
+
       const tableColumns = [
         {
           field: '__rowNumber',
@@ -68,36 +125,63 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
         },
         ...visibleColumns,
       ].reverse();
+
+      // ----------------------------------
+      // Header
+      // ----------------------------------
+
       const headers = tableColumns.map(
         column => column.headerName ?? column.field
       );
-      const data = rows.map((row, rowIndex) => {
+
+      // ----------------------------------
+      // Data
+      // ----------------------------------
+
+      const tableData = rows.map((row, rowIndex) => {
         return tableColumns.map(column => {
           let value: unknown;
+
+          // شماره ردیف
           if (column.field === '__rowNumber') {
             value = rowIndex + 1;
           } else {
             value = row[column.field];
           }
+
+          // مقدار خالی
           if (value === null || value === undefined) {
             return '';
           }
+
+          // Boolean
           if (typeof value === 'boolean') {
             return value ? 'بله' : 'خیر';
           }
+
+          // Array
           if (Array.isArray(value)) {
-            return value.join(', ');
+            return toPersianDigits(value.join(', '));
           }
-          if (typeof value === 'object') {
-            return JSON.stringify(value);
+
+          // Object
+          if (typeof value === 'object' && value !== null) {
+            return toPersianDigits(JSON.stringify(value));
           }
-          return String(value);
+
+          // تمام اعداد
+          return toPersianDigits(String(value));
         });
       });
+
+      // ----------------------------------
+      // جدول
+      // ----------------------------------
+
       autoTable(pdf, {
         head: [headers],
 
-        body: data,
+        body: tableData,
 
         startY: 23,
 
@@ -113,31 +197,49 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
         styles: {
           font: 'Vazirmatn',
           fontStyle: 'normal',
+
           fontSize: 7,
+
           cellPadding: 2,
+
           halign: 'center',
           valign: 'middle',
+
           overflow: 'linebreak',
         },
 
         headStyles: {
           font: 'Vazirmatn',
+
           fontStyle: 'bold',
+
           fontSize: 8,
+
           halign: 'center',
           valign: 'middle',
         },
 
         bodyStyles: {
           font: 'Vazirmatn',
+
           fontStyle: 'normal',
+
           halign: 'center',
           valign: 'middle',
         },
+
         showHead: 'everyPage',
+
         rowPageBreak: 'avoid',
+
         horizontalPageBreak: true,
+
         horizontalPageBreakRepeat: 0,
+
+        // --------------------------------
+        // شماره صفحه
+        // --------------------------------
+
         didDrawPage: () => {
           const pageNumber = pdf.getNumberOfPages();
 
@@ -145,9 +247,14 @@ export default function PdfButton({ rows, columns }: PdfButtonProps) {
 
           pdf.setFontSize(7);
 
-          pdf.text(`صفحه ${pageNumber}`, 8, 202);
+          pdf.text(`صفحه ${toPersianDigits(pageNumber)}`, 8, 202);
         },
       });
+
+      // ----------------------------------
+      // دانلود
+      // ----------------------------------
+
       pdf.save('cartable.pdf');
     } catch (error) {
       console.error('PDF Error:', error);

@@ -9,28 +9,43 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+
 import CasesIcon from '@mui/icons-material/Cases';
+import CachedIcon from '@mui/icons-material/Cached';
+import TuneIcon from '@mui/icons-material/Tune';
+
 import DatePicker from 'react-multi-date-picker';
 import persian from 'react-date-object/calendars/persian';
 import persian_fa from 'react-date-object/locales/persian_fa';
 import InputIcon from 'react-multi-date-picker/components/input_icon';
-import CachedIcon from '@mui/icons-material/Cached';
-import TuneIcon from '@mui/icons-material/Tune';
-// import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import type { GridColDef } from '@mui/x-data-grid';
+
 import { DataGrid } from '@mui/x-data-grid';
+
+import type { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+
 import { faIR } from '@mui/x-data-grid/locales';
-import React, { useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
+
 import NewCart from './newCart';
 import Month from './monthInput';
 import NoInput from './noInput';
-import type { GridRowSelectionModel } from '@mui/x-data-grid';
+
 import ExcelBtn from './ExcelBtn';
 import DeleteBtn from './DeleteBtn';
 import PdfBtn from './PdfBtn';
-import data from './data.json';
 import SearchBtn from './searchBtn';
-import AddCartAm from './addCartAm';
+import AddCartAm from './addCartAmal';
+
+// ==============================
+// IMPORT DATA
+// ==============================
+
+import data from './data.json';
+
+// ==============================
+// DatePicker Style
+// ==============================
 
 const styles = {
   width: '150px',
@@ -38,17 +53,82 @@ const styles = {
   fontSize: '16px',
 };
 
-const gridData = data;
+// ==============================
+// Row Type
+// ==============================
+
+interface CartableRow {
+  id: string | number;
+
+  process?: string;
+  watched?: boolean;
+
+  month?: number | string;
+  year?: number | string;
+
+  fileDet?: string;
+  description?: string;
+
+  orderNum?: string | number;
+  yegan?: string | number;
+
+  force?: string;
+  sender?: string;
+
+  curYegan?: string | number;
+
+  processStatus?: string;
+
+  fileNum?: string | number;
+
+  employeeNumber?: string | number;
+
+  [key: string]: unknown;
+}
+
+// ==============================
+// Component
+// ==============================
 
 export default function Cartable() {
-  const [rows, setRows] = useState(gridData);
-  const [filteredRows, setFilteredRows] = useState(rows);
+  // ==========================================
+  // Rows
+  // ==========================================
+
+  const [rows, setRows] = useState<CartableRow[]>([]);
+
+  const [filteredRows, setFilteredRows] = useState<CartableRow[]>([]);
+
+  // ==========================================
+  // Pagination
+  // ==========================================
+
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+
+  // ==========================================
+  // Loading
+  // ==========================================
+
+  const [loading, setLoading] = useState(false);
+
+  // ==========================================
+  // Selected Rows
+  // ==========================================
+
   const [selectedRows, setSelectedRows] = useState<GridRowSelectionModel>({
     type: 'include',
     ids: new Set(),
   });
+
+  // ==========================================
+  // Search Values
+  // ==========================================
+
   const [searchValues, setSearchValues] = useState({
-    month: '',
+    month: null as number | null,
     year: '',
     processStatus: '',
     yeganFrom: '',
@@ -59,85 +139,106 @@ export default function Cartable() {
     employeeNumber: '',
   });
 
+  // ==========================================
+  // Options
+  // ==========================================
+
   const process = ['تایید', 'بررسی شد', 'در انتظار', 'مرجوعی'];
+
   const forces = ['زمینی', 'هوایی', 'پدافند هوایی', 'دریایی'];
+
   const communication = ['تامین', 'مالی'];
 
-  const columns: GridColDef<(typeof rows)[number]>[] = [
+  // ==========================================
+  // Columns
+  // ==========================================
+
+  const columns: GridColDef<CartableRow>[] = [
     {
       field: 'process',
       headerName: 'عملیات',
       width: 100,
       renderCell: () => <AddCartAm />,
     },
+
     {
       field: 'watched',
       headerName: 'وضعیت مشاهده',
       width: 120,
       editable: true,
-      renderCell: params => <Checkbox checked={params.value} />,
+
+      renderCell: params => <Checkbox checked={Boolean(params.value)} />,
     },
+
     {
       field: 'month',
       headerName: 'ماه',
       width: 100,
     },
+
     {
       field: 'year',
       headerName: 'سال',
-      // type: 'number',
       width: 110,
       editable: true,
     },
+
     {
       field: 'fileDet',
       headerName: 'مشخصات فایل',
-      description: 'This column has a value getter and is not sortable.',
-      sortable: false,
       width: 160,
+      sortable: false,
     },
+
     {
       field: 'description',
       headerName: 'توضیحات',
       width: 200,
       editable: true,
     },
+
     {
       field: 'orderNum',
       headerName: 'شماره دستور',
       width: 100,
       editable: true,
     },
+
     {
       field: 'yegan',
       headerName: 'یگان ایجاد کننده',
       width: 140,
       editable: true,
     },
+
     {
       field: 'force',
       headerName: 'نیرو',
       width: 120,
       editable: true,
     },
+
     {
       field: 'sender',
       headerName: 'سازمان ارسال کننده',
       width: 140,
       editable: true,
     },
+
     {
       field: 'curYegan',
       headerName: 'یگان فعلی',
       width: 120,
       editable: true,
     },
+
     {
       field: 'processStatus',
       headerName: 'وضعیت فرآیند',
       width: 120,
       editable: true,
     },
+
     {
       field: 'fileNum',
       headerName: 'شماره فایل',
@@ -146,26 +247,69 @@ export default function Cartable() {
     },
   ];
 
-  const handleSearch = () => {
-    const monthMap: Record<string, number> = {
-      فروردین: 1,
-      اردیبهشت: 2,
-      خرداد: 3,
-      تیر: 4,
-      مرداد: 5,
-      شهریور: 6,
-      مهر: 7,
-      آبان: 8,
-      آذر: 9,
-      دی: 10,
-      بهمن: 11,
-      اسفند: 12,
-    };
+  // ==========================================
+  // Load Data From data.json
+  // ==========================================
 
+  useEffect(() => {
+    setLoading(true);
+
+    try {
+      if (!Array.isArray(data)) {
+        console.error('data.json باید یک آرایه باشد.');
+
+        setRows([]);
+        setFilteredRows([]);
+
+        return;
+      }
+
+      const formattedData: CartableRow[] = data.map((row, index) => ({
+        ...row,
+        id: row.id !== undefined && row.id !== null ? row.id : index + 1,
+      }));
+
+      console.log('DATA FROM data.json:', formattedData);
+
+      setRows(formattedData);
+      setFilteredRows(formattedData);
+    } catch (error) {
+      console.error('Error loading data.json:', error);
+
+      setRows([]);
+      setFilteredRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ==========================================
+  // Selected Rows
+  // ==========================================
+
+  const getSelectedRows = (): CartableRow[] => {
+    if (selectedRows.type === 'include' && selectedRows.ids.size === 0) {
+      return [];
+    }
+
+    if (selectedRows.type === 'include') {
+      return filteredRows.filter(row => selectedRows.ids.has(row.id));
+    }
+
+    return filteredRows.filter(row => !selectedRows.ids.has(row.id));
+  };
+
+  const selectedData = getSelectedRows();
+
+  // ==========================================
+  // Search
+  // ==========================================
+
+  const handleSearch = () => {
     const result = rows.filter(row => {
       // ماه
-      if (searchValues.month) {
-        if (row.month !== monthMap[searchValues.month]) {
+      if (searchValues.month !== null) {
+        if (Number(row.month) !== searchValues.month) {
           return false;
         }
       }
@@ -176,48 +320,81 @@ export default function Cartable() {
           return false;
         }
       }
+
+      // وضعیت فرآیند
       if (searchValues.processStatus) {
         if (row.processStatus !== searchValues.processStatus) {
           return false;
         }
       }
-      // شماره یگان فعلی - از
+
+      // یگان از
       if (searchValues.yeganFrom) {
         if (Number(row.curYegan) < Number(searchValues.yeganFrom)) {
           return false;
         }
       }
 
-      // شماره یگان فعلی - تا
+      // یگان تا
       if (searchValues.yeganTo) {
         if (Number(row.curYegan) > Number(searchValues.yeganTo)) {
           return false;
         }
       }
+
+      // نیرو
       if (searchValues.force) {
         if (row.force !== searchValues.force) {
           return false;
         }
       }
+
+      // شماره دستور
       if (searchValues.orderNum) {
         if (!String(row.orderNum).includes(searchValues.orderNum)) {
           return false;
         }
       }
+
+      // فرستنده
       if (searchValues.sender) {
         if (row.sender !== searchValues.sender) {
           return false;
         }
       }
+
+      // شماره کارمندی
+      if (searchValues.employeeNumber) {
+        if (!String(row.employeeNumber).includes(searchValues.employeeNumber)) {
+          return false;
+        }
+      }
+
       return true;
     });
 
     setFilteredRows(result);
+
+    // صفحه اول
+    setPaginationModel({
+      page: 0,
+      pageSize: 5,
+    });
+
+    // پاک کردن انتخاب‌ها
+    setSelectedRows({
+      type: 'include',
+      ids: new Set(),
+    });
   };
+
+  // ==========================================
+  // Reset Search
+  // ==========================================
 
   const handleResetSearch = () => {
     setSearchValues({
-      month: '',
+      month: null,
       year: '',
       processStatus: '',
       yeganFrom: '',
@@ -229,10 +406,32 @@ export default function Cartable() {
     });
 
     setFilteredRows(rows);
+
+    setPaginationModel({
+      page: 0,
+      pageSize: 5,
+    });
+
+    setSelectedRows({
+      type: 'include',
+      ids: new Set(),
+    });
   };
+
+  // ==========================================
+  // Total Rows
+  // ==========================================
+
+  const totalRows = filteredRows.length;
+
+  // ==========================================
+  // Render
+  // ==========================================
 
   return (
     <Box>
+      {/* ================= HEADER ================= */}
+
       <Box
         sx={{
           display: 'flex',
@@ -243,9 +442,17 @@ export default function Cartable() {
         }}
       >
         <CasesIcon />
+
         <Typography>کارتابل</Typography>
       </Box>
+
+      {/* ================= SEARCH ================= */}
+
       <form
+        onSubmit={e => {
+          e.preventDefault();
+          handleSearch();
+        }}
         style={{
           position: 'relative',
           border: 'solid 1px',
@@ -265,6 +472,7 @@ export default function Cartable() {
         >
           محدوده جستجو
         </Typography>
+
         <Box
           sx={{
             display: 'grid',
@@ -272,9 +480,10 @@ export default function Cartable() {
             marginY: '50px',
             rowGap: '20px',
             columnGap: '10%',
-            // justifyContent: 'space-between',
           }}
         >
+          {/* ماه */}
+
           <Month
             value={searchValues.month}
             onChange={value =>
@@ -283,7 +492,10 @@ export default function Cartable() {
                 month: value,
               }))
             }
-          />{' '}
+          />
+
+          {/* سال */}
+
           <NoInput
             title="سال"
             value={searchValues.year}
@@ -294,6 +506,9 @@ export default function Cartable() {
               }))
             }
           />
+
+          {/* وضعیت کارتابل */}
+
           <Box
             sx={{
               display: 'flex',
@@ -303,12 +518,14 @@ export default function Cartable() {
             }}
           >
             <Typography>وضعیت کارتابل:</Typography>
-            <RadioGroup name="use-radio-group" defaultValue="first">
+
+            <RadioGroup name="cartable-status" defaultValue="jari">
               <FormControlLabel
                 value="jari"
                 label="کارتابل جاری"
                 control={<Radio />}
               />
+
               <FormControlLabel
                 value="erjaee"
                 label="کارتابل ارجاعی"
@@ -316,6 +533,9 @@ export default function Cartable() {
               />
             </RadioGroup>
           </Box>
+
+          {/* وضعیت فرآیند */}
+
           <Box
             sx={{
               display: 'flex',
@@ -325,6 +545,7 @@ export default function Cartable() {
             }}
           >
             <Typography>وضعیت فرآیند:</Typography>
+
             <Autocomplete
               disablePortal
               options={process}
@@ -341,6 +562,9 @@ export default function Cartable() {
               )}
             />
           </Box>
+
+          {/* یگان */}
+
           <Box
             sx={{
               display: 'flex',
@@ -349,7 +573,7 @@ export default function Cartable() {
               columnGap: '8px',
             }}
           >
-            <Typography sx={{ marginLeft: '10px' }}>شماره یگان:</Typography>
+            <Typography>شماره یگان:</Typography>
             از:
             <TextField
               value={searchValues.yeganFrom}
@@ -359,7 +583,9 @@ export default function Cartable() {
                   yeganFrom: e.target.value,
                 }))
               }
-              sx={{ width: '70px' }}
+              sx={{
+                width: '70px',
+              }}
             />
             تا:
             <TextField
@@ -370,9 +596,14 @@ export default function Cartable() {
                   yeganTo: e.target.value,
                 }))
               }
-              sx={{ width: '70px' }}
+              sx={{
+                width: '70px',
+              }}
             />
           </Box>
+
+          {/* نیرو */}
+
           <Box
             sx={{
               display: 'flex',
@@ -382,6 +613,7 @@ export default function Cartable() {
             }}
           >
             <Typography>نیرو:</Typography>
+
             <Autocomplete
               disablePortal
               options={forces}
@@ -398,6 +630,9 @@ export default function Cartable() {
               )}
             />
           </Box>
+
+          {/* شماره کارمندی */}
+
           <NoInput
             title="شماره کارمندی"
             value={searchValues.employeeNumber}
@@ -408,6 +643,9 @@ export default function Cartable() {
               }))
             }
           />
+
+          {/* شماره دستور */}
+
           <NoInput
             title="شماره دستور"
             value={searchValues.orderNum}
@@ -418,6 +656,9 @@ export default function Cartable() {
               }))
             }
           />
+
+          {/* سازمان ارسال کننده */}
+
           <Box
             sx={{
               display: 'flex',
@@ -427,10 +668,13 @@ export default function Cartable() {
             }}
           >
             <Typography>سازمان ارسال کننده:</Typography>
+
             <Autocomplete
               disablePortal
               options={communication}
-              sx={{ width: 200 }}
+              sx={{
+                width: 200,
+              }}
               value={searchValues.sender || null}
               onChange={(_, newValue) => {
                 setSearchValues(prev => ({
@@ -438,9 +682,12 @@ export default function Cartable() {
                   sender: newValue ?? '',
                 }));
               }}
-              renderInput={params => <TextField {...params} label="" />}
+              renderInput={params => <TextField {...params} />}
             />
           </Box>
+
+          {/* از تاریخ */}
+
           <Box
             sx={{
               display: 'flex',
@@ -450,12 +697,16 @@ export default function Cartable() {
             }}
           >
             <Typography>از تاریخ:</Typography>
+
             <DatePicker
               calendar={persian}
               locale={persian_fa}
               render={<InputIcon style={styles} />}
             />
           </Box>
+
+          {/* تا تاریخ */}
+
           <Box
             sx={{
               display: 'flex',
@@ -465,6 +716,7 @@ export default function Cartable() {
             }}
           >
             <Typography>تا تاریخ:</Typography>
+
             <DatePicker
               calendar={persian}
               locale={persian_fa}
@@ -472,6 +724,9 @@ export default function Cartable() {
             />
           </Box>
         </Box>
+
+        {/* دکمه‌های جستجو */}
+
         <Box
           sx={{
             display: 'flex',
@@ -481,13 +736,16 @@ export default function Cartable() {
             bottom: '10px',
           }}
         >
-          <Button variant="contained" onClick={handleResetSearch}>
+          <Button type="button" variant="contained" onClick={handleResetSearch}>
             <CachedIcon />
           </Button>
 
           <SearchBtn onClick={handleSearch} />
         </Box>
       </form>
+
+      {/* ================= STATUS BUTTONS ================= */}
+
       <Box
         sx={{
           display: 'flex',
@@ -497,19 +755,17 @@ export default function Cartable() {
           padding: '8px',
         }}
       >
-        <Button variant="contained" size="medium">
-          شروع شده
-        </Button>
-        <Button variant="contained" size="medium">
-          در جریان
-        </Button>
-        <Button variant="contained" size="medium">
-          برگشت خورده
-        </Button>
-        <Button variant="contained" size="medium">
-          به اتمام رسیده
-        </Button>
+        <Button variant="contained">شروع شده</Button>
+
+        <Button variant="contained">در جریان</Button>
+
+        <Button variant="contained">برگشت خورده</Button>
+
+        <Button variant="contained">به اتمام رسیده</Button>
       </Box>
+
+      {/* ================= GRID ================= */}
+
       <Box
         sx={{
           marginTop: '15px',
@@ -518,13 +774,16 @@ export default function Cartable() {
           marginBottom: '40px',
         }}
       >
+        {/* Toolbar */}
+
         <Box
           sx={{
             display: 'flex',
             columnGap: '5px',
           }}
         >
-          <NewCart />
+          <NewCart setGridData={setFilteredRows} />
+
           <DeleteBtn
             rows={rows}
             setRows={setRows}
@@ -532,16 +791,23 @@ export default function Cartable() {
             selectedRows={selectedRows}
             setSelectedRows={setSelectedRows}
           />
-          <ExcelBtn rows={filteredRows} columns={columns} />
-          <PdfBtn rows={filteredRows} columns={columns} />
+
+          <ExcelBtn rows={selectedData} columns={columns} />
+
+          <PdfBtn rows={selectedData} columns={columns} />
+
           <Button variant="contained" size="medium">
             تهیه خروجی داده ها
           </Button>
+
           <Button variant="contained" size="medium">
             <TuneIcon />
             سفارشی سازی ستون ها
           </Button>
         </Box>
+
+        {/* DataGrid */}
+
         <Box
           sx={{
             height: 400,
@@ -552,6 +818,46 @@ export default function Cartable() {
           <DataGrid
             rows={filteredRows}
             columns={columns}
+
+            loading={loading}
+
+            checkboxSelection
+
+            rowSelectionModel={selectedRows}
+
+            onRowSelectionModelChange={newSelection => {
+              setSelectedRows(newSelection);
+            }}
+
+            disableRowSelectionOnClick
+
+            pagination
+
+            paginationMode="client"
+
+            rowCount={totalRows}
+
+            paginationModel={paginationModel}
+
+            onPaginationModelChange={newModel => {
+              setPaginationModel(newModel);
+            }}
+
+            pageSizeOptions={[5]}
+
+            getRowId={row => row.id}
+
+            localeText={{
+              ...faIR.components.MuiDataGrid.defaultProps.localeText,
+
+              paginationDisplayedRows: ({ from, to, count }) =>
+                `${from}–${to} از ${count !== -1 ? count : `بیشتر از ${to}`}`,
+
+              paginationRowsPerPage: 'تعداد در هر صفحه',
+
+              footerRowSelected: count => `${count} ردیف انتخاب شده`,
+            }}
+
             sx={{
               '& .MuiDataGrid-cell': {
                 display: 'flex',
@@ -565,21 +871,6 @@ export default function Cartable() {
                 alignItems: 'center',
               },
             }}
-            localeText={faIR.components.MuiDataGrid.defaultProps.localeText}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
-                },
-              },
-            }}
-            rowSelectionModel={selectedRows}
-            onRowSelectionModelChange={newSelection => {
-              setSelectedRows(newSelection);
-            }}
-            pageSizeOptions={[5]}
-            checkboxSelection
-            disableRowSelectionOnClick
           />
         </Box>
       </Box>

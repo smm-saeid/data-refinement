@@ -44,13 +44,19 @@ export default function AddCartAm() {
   });
 
   const handleClose = () => setOpen(false);
-  const handleAddCart = function () {
-    setOpen(true);
+  const handleAddCart = () => setOpen(true);
+  const handleAddfile = function (newFile) {
+    const isDuplicate = files.some(
+      file => file.name === newFile.name && file.size === newFile.size
+    );
+
+    if (files.length && isDuplicate) return;
+    setFiles(file => [...file, newFile]);
   };
   const handleDrop = function (e) {
     e.preventDefault();
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    setFiles(file => [...file, ...droppedFiles]);
+    const newFile = Array.from(e.dataTransfer.files);
+    handleAddfile(newFile[0]);
   };
   const handleDragOver = function (e) {
     e.preventDefault();
@@ -126,7 +132,7 @@ export default function AddCartAm() {
                 بارگذاری فایل
                 <VisuallyHiddenInput
                   type="file"
-                  onChange={event => console.log(event.target.files)}
+                  onChange={event => handleAddfile(event.target.files[0])}
                   multiple
                 />
               </Button>

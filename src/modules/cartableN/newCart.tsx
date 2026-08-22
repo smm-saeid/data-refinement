@@ -1,13 +1,12 @@
-import React from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import {
-  Autocomplete,
+  // Autocomplete,
   Backdrop,
   Box,
   Button,
   Fade,
   Modal,
-  TextField,
+  // TextField,
   Typography,
 } from '@mui/material';
 import Month from './monthInput';
@@ -18,6 +17,8 @@ import type { GridColDef } from '@mui/x-data-grid';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import React, { useState } from 'react';
+// import { data } from 'react-router';
 
 const style = {
   position: 'absolute',
@@ -29,12 +30,40 @@ const style = {
   p: 4,
 };
 
-export default function NewCart() {
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+// interface FormData {
+//   fileNum: string;
+//   month: string;
+//   year: string;
+//   orderNum: string;
+//   curYegan: string;
+//   description: string;
+//   force: string;
+// }
 
-  const nums = ['1', '2', '3'];
+// interface NewCartProps {
+//   setGridData: React.Dispatch<React.SetStateAction<FormData[]>>;
+// }
+
+const initialData = {
+  fileNum: '',
+  month: null as number | null,
+  year: '',
+  orderNum: '',
+  curYegan: '',
+  description: '',
+  force: '',
+};
+
+export default function NewCart({ setGridData }) {
+  const [open, setOpen] = React.useState(false);
+  const [formDatas, setFormDatas] = useState(initialData);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => {
+    setOpen(false);
+    setFormDatas(initialData);
+  };
+
+  // const nums = ['1', '2', '3'];
 
   const rows = [{ id: 1, lastName: 'Snow', firstName: 'Jon', age: 14 }];
   const columns: GridColDef<(typeof rows)[number]>[] = [
@@ -60,6 +89,22 @@ export default function NewCart() {
       width: 100,
     },
   ];
+
+  const handleDataGrid = function (newData) {
+    if (newData === initialData) return;
+
+    const newRow = {
+      id: Date.now(),
+      ...formDatas,
+    };
+
+    setGridData(prev => [...prev, newRow]);
+
+    setFormDatas(initialData);
+
+    handleClose();
+  };
+
   return (
     <form>
       <Button onClick={handleOpen} variant="contained" size="medium">
@@ -107,7 +152,7 @@ export default function NewCart() {
                 columnGap: '10%',
               }}
             >
-              <Box
+              {/* <Box
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -122,12 +167,51 @@ export default function NewCart() {
                   sx={{ width: 150 }}
                   renderInput={params => <TextField {...params} label="" />}
                 />
-              </Box>
-              <Month />
-              <NoInput title="سال" />
-              <NoInput title="شماره دستور" />
-              <NoInput title="کد یگان" />
-              <NoInput title="توضیحات" />
+              </Box> */}
+              <NoInput
+                title="شماره فایل را انتخاب کنید"
+                value={formDatas.fileNum}
+                onChange={value =>
+                  setFormDatas(prev => ({ ...prev, fileNum: value }))
+                }
+              />
+              <Month
+                value={formDatas.month}
+                onChange={value =>
+                  setFormDatas(prev => ({
+                    ...prev,
+                    month: value,
+                  }))
+                }
+              />
+              <NoInput
+                title="سال"
+                value={formDatas.year}
+                onChange={value =>
+                  setFormDatas(prev => ({ ...prev, year: value }))
+                }
+              />
+              <NoInput
+                title="شماره دستور"
+                value={formDatas.orderNum}
+                onChange={value =>
+                  setFormDatas(prev => ({ ...prev, orderNum: value }))
+                }
+              />
+              <NoInput
+                title="کد یگان"
+                value={formDatas.curYegan}
+                onChange={value =>
+                  setFormDatas(prev => ({ ...prev, curYegan: value }))
+                }
+              />
+              <NoInput
+                title="توضیحات"
+                value={formDatas.description}
+                onChange={value =>
+                  setFormDatas(prev => ({ ...prev, description: value }))
+                }
+              />
               <Box
                 sx={{
                   display: 'flex',
@@ -156,14 +240,20 @@ export default function NewCart() {
                   disableRowSelectionOnClick
                 />
               </Box>
-              <NoInput title="نیرو" />
+              <NoInput
+                title="نیرو"
+                value={formDatas.force}
+                onChange={value =>
+                  setFormDatas(prev => ({ ...prev, force: value }))
+                }
+              />
             </Box>
             <Box
               sx={{ display: 'flex', justifyContent: 'center', gap: '10px' }}
             >
               <Button
-                onClick={handleClose}
-                type="submit"
+                onClick={() => handleDataGrid(formDatas)}
+                type="button"
                 variant="contained"
                 sx={{ bgcolor: '#1976d2' }}
               >
